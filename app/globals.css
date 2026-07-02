@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@keyframes blink-dot {
+  0%, 50% {
+    opacity: 1;
+  }
+
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.blink-dot {
+  animation: blink-dot 1s steps(1, end) infinite;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
