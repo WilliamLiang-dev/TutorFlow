@@ -28,7 +28,7 @@ export default function Sidebar() {
 
   return (
     <aside className="sticky top-0 h-screen w-[280px] bg-black p-4">
-      <div className='flex h-full flex-col rounded-[28px] bg-zinc-900 p-4 text-white'>
+      <div className='flex h-full flex-col rounded-[28px] bg-[#151515] p-4 text-white'>
         {/* Logo */}
         <Link
           href="/dashboard"
