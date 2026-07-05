@@ -40,11 +40,11 @@ const weekDays = [
 ];
 
 
-export default function CustomCalendar() {
+export default function Calendar() {
   const [view, setView] = useState<"month" | "week" | "day">("week");
 
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#efd5ff_0%,#515ada_100%)] p-8">
+    <section className="flex h-full flex-col overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#F6E7D8_0%,#D9B08C_50%,#A76F5A_100%)] p-8">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold text-black">July 2026</h1>
@@ -89,13 +89,14 @@ export default function CustomCalendar() {
             {weekDays.map((day) => (
               <button
                 key={day.date}
-                className={`rounded-2xl px-4 py-4 text-sm border border-white/30 bg-white/20 p-1 shadow-lg backdrop-blur-md transition ${
+                className={`flex items-center justify-center gap-1 rounded-2xl px-4 py-4 text-sm border border-white/30 bg-white/20 p-1 shadow-lg backdrop-blur-md transition ${
                   day.date === 12
-                    ? "bg-white/70 text-purple-400 shadow-md"
+                    ? "bg-white/70 text-purple-400"
                     : "bg-black text-black transition delay-50 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110"
                 }`}
               >
-                {day.label} {day.date}
+                <span className="text-sm leading-none">{day.label}</span>
+                <span className="text-3xl font-bold leading-none">{day.date}</span>
               </button>
             ))}
           </div>
