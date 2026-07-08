@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @keyframes blink-dot {
   0%, 50% {
     opacity: 1;

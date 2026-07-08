@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { lessons } from "@/app/lib/placeholder-data";
+import { lessons, students } from "@/app/lib/placeholder-data";
 
 const START_HOUR = 8;
 const END_HOUR = 22;
@@ -12,11 +12,26 @@ const hours = Array.from(
   (_, index) => START_HOUR + index
 );
 
+const weekDays = [
+  { label: "Mon", date: 6, dateISO: "2026-07-06" },
+  { label: "Tue", date: 7, dateISO: "2026-07-07" },
+  { label: "Wed", date: 8, dateISO: "2026-07-08" },
+  { label: "Thu", date: 9, dateISO: "2026-07-09" },
+  { label: "Fri", date: 10, dateISO: "2026-07-10" },
+  { label: "Sat", date: 11, dateISO: "2026-07-11" },
+  { label: "Sun", date: 12, dateISO: "2026-07-12" },
+];
+
 function formatHour(hour: number) {
   if (hour === 0) return "12:00 AM";
   if (hour < 12) return `${hour}:00 AM`;
   if (hour === 12) return "12:00 PM";
   return `${hour - 12}:00 PM`;
+}
+
+function timeStringToHour(time: string) {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour + minute / 60;
 }
 
 function getLessonPosition(start: number, end: number) {
@@ -28,17 +43,6 @@ function getLessonPosition(start: number, end: number) {
     height: `${height}px`,
   };
 }
-
-const weekDays = [
-  { label: "Mon", date: 11 },
-  { label: "Tue", date: 12 },
-  { label: "Wed", date: 13 },
-  { label: "Thu", date: 14 },
-  { label: "Fri", date: 15 },
-  { label: "Sat", date: 16 },
-  { label: "Sun", date: 17 },
-];
-
 
 export default function Calendar() {
   const [view, setView] = useState<"month" | "week" | "day">("week");
@@ -74,83 +78,103 @@ export default function Calendar() {
         </div>
       </header>
 
-        <div className="flex min-h-0 flex-1 flex-col rounded-[28px] p-6">
-          {/* Top date row */}
-          <div
-            className="grid gap-2"
-            style={{
-              gridTemplateColumns: "72px repeat(7, minmax(0, 1fr))",
-            }}
-          >
-            <div className="flex items-center text-sm text-black/60">
-              GMT +8
-            </div>
+      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] p-6">
+        {/* Top date row */}
+        <div
+          className="grid gap-2"
+          style={{
+            gridTemplateColumns: "72px repeat(7, minmax(0, 1fr))",
+          }}
+        >
+          <div className="flex items-center text-sm text-black/60">
+            GMT +8
+          </div>
 
-            {weekDays.map((day) => (
-              <button
-                key={day.date}
-                className={`flex items-center justify-center gap-1 rounded-2xl px-4 py-4 text-sm border border-white/30 bg-white/20 p-1 shadow-lg backdrop-blur-md transition ${
-                  day.date === 12
-                    ? "bg-white/70 text-purple-400"
-                    : "bg-black text-black transition delay-50 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110"
-                }`}
+          {weekDays.map((day) => (
+            <button
+              key={day.date}
+              className={`flex items-center justify-center gap-1 rounded-2xl border border-white/30 bg-white/20 p-1 px-4 py-4 text-sm shadow-lg backdrop-blur-md transition ${
+                day.dateISO === "2026-07-07"
+                  ? "bg-white/70 text-purple-400"
+                  : "bg-black text-black delay-50 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110"
+              }`}
+            >
+              <span className="text-sm leading-none">{day.label}</span>
+              <span className="text-3xl font-bold leading-none">
+                {day.date}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Lower time grid */}
+        <div
+          className="mt-4 grid min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-2"
+          style={{
+            gridTemplateColumns: "72px repeat(7, minmax(0, 1fr))",
+          }}
+        >
+          {/* Left time labels */}
+          <div>
+            {hours.map((hour) => (
+              <div
+                key={hour}
+                className="h-20 border-t border-black/15 pt-2 text-sm text-black/60"
               >
-                <span className="text-sm leading-none">{day.label}</span>
-                <span className="text-3xl font-bold leading-none">{day.date}</span>
-              </button>
+                {formatHour(hour)}
+              </div>
             ))}
           </div>
 
-          {/* Lower time grid */}
-          <div
-            className="mt-4 grid min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-2"
-            style={{
-              gridTemplateColumns: "72px repeat(7, minmax(0, 1fr))",
-            }}
-          >
-            {/* Left time labels */}
-            <div>
+          {/* Seven day columns */}
+          {weekDays.map((day) => (
+            <div key={day.date} className="relative border-l border-black/15">
+              {/* hour grid cells */}
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-20 border-t border-black/15 pt-2 text-sm text-black/60"
-                >
-                  {formatHour(hour)}
-                </div>
+                  className="h-20 border-t border-black/15"
+                />
               ))}
-            </div>
 
-            {/* Seven day columns */}
-            {weekDays.map((day, index) => (
-              <div key={day.date} className="relative border-l border-black/15">
-                {/* hour grid cells */}
-                {hours.map((hour) => (
-                  <div
-                    key={hour}
-                    className="h-20 border-t border-black/15"
-                  />
-                ))}
+              {/* lesson cards */}
+              {lessons
+                .filter((lesson) => lesson.date === day.dateISO)
+                .map((lesson) => {
+                  const student = students.find(
+                    (student) => student.id === lesson.studentId
+                  );
 
-                {/* fake lesson data */}
-                {lessons
-                  .filter((lesson) => lesson.day === index + 1)
-                  .map((lesson) => (
+                  const start = timeStringToHour(lesson.startTime);
+                  const end = timeStringToHour(lesson.endTime);
+
+                  return (
                     <div
                       key={lesson.id}
-                      className={`absolute left-2 right-2 rounded-xl p-3 text-sm font-medium text-white ${lesson.color}`}
-                      style={getLessonPosition(lesson.start, lesson.end)}
+                      className={`absolute left-2 right-2 rounded-xl p-3 text-sm font-medium text-white shadow-md ${lesson.color}`}
+                      style={getLessonPosition(start, end)}
                     >
-                      <p>{lesson.title}</p>
+                      <p>
+                        {lesson.subject} -{" "}
+                        {student?.name ?? "Unknown student"}
+                      </p>
+
                       <p className="mt-1 text-xs opacity-80">
-                        {lesson.start}:00 - {lesson.end}:00
+                        {lesson.startTime} - {lesson.endTime}
+                      </p>
+
+                      <p className="mt-1 text-xs opacity-80">
+                        {lesson.studentVerified
+                          ? "Confirmed"
+                          : "Pending confirmation"}
                       </p>
                     </div>
-                  ))}
-              </div>
-            ))}
-            
-          </div>
+                  );
+                })}
+            </div>
+          ))}
         </div>
+      </div>
     </section>
   );
 }
