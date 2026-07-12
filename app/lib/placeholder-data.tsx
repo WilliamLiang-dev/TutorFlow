@@ -2,7 +2,7 @@ import type {
   User,
   Teacher,
   Student,
-  TeacherStudent,
+  TeachingAssignment,
   Invitation,
   Lesson,
 } from "@/app/lib/definition";
@@ -50,13 +50,13 @@ export const teachers: Teacher[] = [
     id: "user_teacher_1",
     name: "William Liang",
     email: "william@example.com",
-    subjects: ["Math", "Physics"],
+    subjects: ["Math", "Physics", "Chemistry"],
   },
   {
     id: "user_teacher_2",
     name: "Mr Lee",
     email: "lee@example.com",
-    subjects: ["Chemistry", "Biology"],
+    subjects: ["Chemistry", "Biology", "Physics"],
   },
 ];
 
@@ -73,7 +73,7 @@ export const students: Student[] = [
     id: "user_student_2",
     name: "Emily Wong",
     level: "F.5",
-    subjects: ["Chemistry"],
+    subjects: ["Chemistry", "Biology"],
     email: "emily.wong@example.com",
     defaultHourlyRate: 500,
   },
@@ -87,30 +87,60 @@ export const students: Student[] = [
   },
 ];
 
-export const teacherStudents: TeacherStudent[] = [
+export const teachingAssignments: TeachingAssignment[] = [
   {
-    id: "relation_1",
+    id: "assignment_1",
     teacherId: "user_teacher_1",
     studentId: "user_student_1",
+    subject: "Math",
+    hourlyRate: 450,
     createdAt: "2026-07-05",
+    status: "active",
   },
   {
-    id: "relation_2",
+    id: "assignment_2",
+    teacherId: "user_teacher_2",
+    studentId: "user_student_1",
+    subject: "Physics",
+    hourlyRate: 480,
+    createdAt: "2026-07-05",
+    status: "active",
+  },
+  {
+    id: "assignment_3",
     teacherId: "user_teacher_1",
     studentId: "user_student_2",
-    createdAt: "2026-07-05",
+    subject: "Chemistry",
+    hourlyRate: 500,
+    createdAt: "2026-07-06",
+    status: "active",
   },
   {
-    id: "relation_3",
+    id: "assignment_4",
     teacherId: "user_teacher_2",
     studentId: "user_student_2",
+    subject: "Biology",
+    hourlyRate: 480,
     createdAt: "2026-07-06",
+    status: "active",
   },
   {
-    id: "relation_4",
+    id: "assignment_5",
     teacherId: "user_teacher_1",
     studentId: "user_student_3",
+    subject: "Math",
+    hourlyRate: 400,
     createdAt: "2026-07-06",
+    status: "active",
+  },
+  {
+    id: "assignment_6",
+    teacherId: "user_teacher_2",
+    studentId: "user_student_2",
+    subject: "Chemistry",
+    hourlyRate: 520,
+    createdAt: "2026-07-07",
+    status: "active",
   },
 ];
 
@@ -150,15 +180,11 @@ export const invitations: Invitation[] = [
 export const lessons: Lesson[] = [
   {
     id: "lesson_1",
+    assignmentId: "assignment_1",
 
-    teacherId: "user_teacher_1",
-    studentId: "user_student_1",
-
-    subject: "Math",
     date: "2026-07-06",
     startTime: "08:00",
     endTime: "09:30",
-    hourlyRate: 450,
 
     teacherVerified: true,
     studentVerified: false,
@@ -172,15 +198,11 @@ export const lessons: Lesson[] = [
   },
   {
     id: "lesson_2",
+    assignmentId: "assignment_3",
 
-    teacherId: "user_teacher_1",
-    studentId: "user_student_2",
-
-    subject: "Chemistry",
     date: "2026-07-07",
     startTime: "10:00",
     endTime: "11:30",
-    hourlyRate: 500,
 
     teacherVerified: true,
     studentVerified: true,
@@ -194,15 +216,11 @@ export const lessons: Lesson[] = [
   },
   {
     id: "lesson_3",
+    assignmentId: "assignment_5",
 
-    teacherId: "user_teacher_1",
-    studentId: "user_student_3",
-
-    subject: "Math",
     date: "2026-07-09",
     startTime: "13:00",
     endTime: "15:00",
-    hourlyRate: 400,
 
     teacherVerified: false,
     studentVerified: false,
@@ -215,15 +233,11 @@ export const lessons: Lesson[] = [
   },
   {
     id: "lesson_4",
+    assignmentId: "assignment_4",
 
-    teacherId: "user_teacher_2",
-    studentId: "user_student_2",
-
-    subject: "Biology",
     date: "2026-07-10",
     startTime: "16:00",
     endTime: "17:30",
-    hourlyRate: 480,
 
     teacherVerified: true,
     studentVerified: false,
@@ -234,5 +248,23 @@ export const lessons: Lesson[] = [
 
     status: "pending_student_verification",
     color: "bg-pink-400",
+  },
+  {
+    id: "lesson_5",
+    assignmentId: "assignment_6",
+
+    date: "2026-07-08",
+    startTime: "14:00",
+    endTime: "15:30",
+
+    teacherVerified: true,
+    studentVerified: true,
+
+    teacherComment:
+      "Emily reviewed mole calculations with Mr Lee and improved accuracy in multi-step questions.",
+    homework: "Complete mole calculation worksheet.",
+
+    status: "confirmed",
+    color: "bg-orange-400",
   },
 ];

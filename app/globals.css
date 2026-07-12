@@ -11,6 +11,175 @@
   }
 }
 
+@layer components {
+  /*
+   * Main glass object.
+   * Keep its background nearly transparent for clear water.
+   */
+  .liquid-glass {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.58);
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.16),
+      inset 1px 0 0 rgba(255, 255, 255, 0.22),
+      inset -1px 0 0 rgba(255, 255, 255, 0.12),
+      0 6px 20px rgba(42, 30, 18, 0.07);
+
+    transform: translateZ(0);
+  }
+
+  /*
+   * Basic fallback.
+   * This keeps the component attractive when SVG backdrop
+   * refraction is unavailable.
+   */
+  .liquid-glass-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    border-radius: inherit;
+    pointer-events: none;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    -webkit-backdrop-filter:
+      blur(1px)
+      saturate(125%)
+      brightness(106%);
+
+    backdrop-filter:
+      blur(1px)
+      saturate(125%)
+      brightness(106%);
+  }
+
+  /*
+   * Real displacement layer.
+   *
+   * The mask limits strong refraction to the edge of the glass.
+   * The center therefore remains clear and readable.
+   */
+  .liquid-glass-refraction {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    padding: 8px;
+    border-radius: inherit;
+    pointer-events: none;
+
+    /*
+     * Safari fallback.
+     */
+    -webkit-backdrop-filter:
+      blur(1px)
+      saturate(125%)
+      brightness(106%);
+
+    /*
+     * Chromium SVG refraction.
+     * The variable is created by the React component.
+     */
+    backdrop-filter: var(--liquid-filter);
+
+    /*
+     * Create an edge ring:
+     * outer shape minus inner content box.
+     */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+
+    -webkit-mask-composite: xor;
+
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+
+    mask-composite: exclude;
+  }
+
+  /*
+   * Specular reflection.
+   * This creates the bright wet-glass appearance.
+   */
+  .liquid-glass-shine {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+
+    border-radius: inherit;
+    pointer-events: none;
+
+    background:
+      radial-gradient(
+        90% 75% at 12% 0%,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.15) 24%,
+        transparent 58%
+      ),
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.32) 0%,
+        rgba(255, 255, 255, 0.04) 32%,
+        transparent 52%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+
+    mix-blend-mode: screen;
+  }
+
+  /*
+   * Keeps text and icons above all visual-effect layers.
+   */
+  .liquid-glass-content {
+    position: relative;
+    z-index: 3;
+  }
+
+  /*
+   * Optional interaction.
+   */
+  .liquid-glass-interactive {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.liquid-glass-interactive:hover {
+  background: rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+    inset 1px 0 0 rgba(255, 255, 255, 0.3),
+    inset -1px 0 0 rgba(255, 255, 255, 0.18),
+    0 6px 20px rgba(42, 30, 18, 0.09);
+}
+
+.liquid-glass-interactive:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+  @media (prefers-reduced-motion: reduce) {
+    .liquid-glass-interactive {
+      transition: none;
+    }
+
+    .liquid-glass-interactive:hover,
+    .liquid-glass-interactive:active {
+      transform: none;
+    }
+  }
+}
+
 .blink-dot {
   animation: blink-dot 1s steps(1, end) infinite;
 }
