@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { geist } from "@/app/ui/font";
+// import { geist } from "@/app/ui/font";
 import LiquidGlass from "../liquid-glass";
 
 const links = [
@@ -33,14 +33,14 @@ export default function Sidebar() {
         {/* Logo */}
         <Link
           href="/dashboard"
-          className="mb-8 inline-flex w-fit rounded-2xl bg-white px-5 py-3 text-xl font-bold text-black"
+          className="mb-8 inline-flex w-fit rounded-2xl bg-white px-5 py-3 text-xl font-semibold text-black"
         >
         <span>TutorFlow</span>
         <span className="blink-dot">.</span>
         </Link>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-3">
+        <nav className="flex flex-col gap-3 font-regular">
         {links.map((link) => {
           const isActive =
             link.href === "/dashboard"
@@ -56,7 +56,7 @@ export default function Sidebar() {
       >
         <Link
           href={link.href}
-          className={`${geist.className} flex w-full items-center gap-4 rounded-2xl border px-4 py-3
+          className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-3
             focus:outline-none
             focus-visible:outline-none
             focus-visible:ring-2
@@ -67,7 +67,7 @@ export default function Sidebar() {
             ${
               isActive
                 ? "border-white/90 bg-white/60 text-black"
-                : "border-transparent bg-transparent text-black/50 hover:bg-white/10 hover:text-black"
+                : "border-transparent bg-transparent text-black/50 hover:bg-white/45 hover:text-black"
             }`}
         >
 

@@ -1,29 +1,32 @@
 @import "tailwindcss";
 
-
-@keyframes blink-dot {
-  0%, 50% {
-    opacity: 1;
-  }
-
-  51%, 100% {
-    opacity: 0;
-  }
-}
-
 @layer components {
   /*
-   * Main glass object.
-   * Keep its background nearly transparent for clear water.
+   * Main liquid-glass container.
+   *
+   * This class is added by LiquidGlass.tsx:
+   *
+   * <div className="liquid-glass">
    */
   .liquid-glass {
     position: relative;
     isolation: isolate;
     overflow: hidden;
 
+    /*
+     * Keep the background almost transparent so the dotted
+     * background can still be seen through the glass.
+     */
     background: rgba(255, 255, 255, 0.035);
+
+    /*
+     * Bright translucent edge.
+     */
     border: 1px solid rgba(255, 255, 255, 0.58);
 
+    /*
+     * Inner highlights and a soft outer shadow create depth.
+     */
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.88),
       inset 0 -1px 0 rgba(255, 255, 255, 0.16),
@@ -31,13 +34,18 @@
       inset -1px 0 0 rgba(255, 255, 255, 0.12),
       0 6px 20px rgba(42, 30, 18, 0.07);
 
+    /*
+     * Gives the element its own rendering layer.
+     * This can make backdrop effects render more consistently.
+     */
     transform: translateZ(0);
   }
 
   /*
-   * Basic fallback.
-   * This keeps the component attractive when SVG backdrop
-   * refraction is unavailable.
+   * Cross-browser fallback layer.
+   *
+   * This layer provides ordinary clear glassmorphism when
+   * SVG displacement through backdrop-filter is unsupported.
    */
   .liquid-glass-fallback {
     position: absolute;
@@ -49,6 +57,9 @@
 
     background: rgba(255, 255, 255, 0.025);
 
+    /*
+     * WebKit version for Safari.
+     */
     -webkit-backdrop-filter:
       blur(1px)
       saturate(125%)
@@ -61,22 +72,26 @@
   }
 
   /*
-   * Real displacement layer.
+   * Refraction layer.
    *
-   * The mask limits strong refraction to the edge of the glass.
-   * The center therefore remains clear and readable.
+   * LiquidGlass.tsx generates the --liquid-filter variable.
+   * This layer reads and applies that SVG filter.
    */
   .liquid-glass-refraction {
     position: absolute;
     inset: 0;
     z-index: 1;
 
+    /*
+     * Controls the thickness of the refracted glass edge.
+     */
     padding: 8px;
+
     border-radius: inherit;
     pointer-events: none;
 
     /*
-     * Safari fallback.
+     * Safari and unsupported-browser fallback.
      */
     -webkit-backdrop-filter:
       blur(1px)
@@ -84,14 +99,19 @@
       brightness(106%);
 
     /*
-     * Chromium SVG refraction.
-     * The variable is created by the React component.
+     * Chromium SVG displacement/refraction.
+     *
+     * The value comes from LiquidGlass.tsx:
+     *
+     * --liquid-filter: url(#filter-id) saturate(...) brightness(...)
      */
     backdrop-filter: var(--liquid-filter);
 
     /*
-     * Create an edge ring:
-     * outer shape minus inner content box.
+     * These masks create a hollow edge ring.
+     *
+     * The refraction is therefore concentrated around the
+     * boundary instead of strongly distorting the centre.
      */
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -107,8 +127,9 @@
   }
 
   /*
-   * Specular reflection.
-   * This creates the bright wet-glass appearance.
+   * Reflected-light layer.
+   *
+   * This creates the wet, curved and shiny appearance.
    */
   .liquid-glass-shine {
     position: absolute;
@@ -137,7 +158,9 @@
   }
 
   /*
-   * Keeps text and icons above all visual-effect layers.
+   * Actual text, icons and buttons.
+   *
+   * This layer stays above the fallback, refraction and shine.
    */
   .liquid-glass-content {
     position: relative;
@@ -145,38 +168,63 @@
   }
 
   /*
-   * Optional interaction.
+   * Optional interactive mode.
+   *
+   * LiquidGlass.tsx adds this class when:
+   *
+   * <LiquidGlass interactive>
    */
   .liquid-glass-interactive {
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    box-shadow 150ms ease;
-}
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
 
-.liquid-glass-interactive:hover {
-  background: rgba(255, 255, 255, 0.07);
+  /*
+   * Hover changes only appearance.
+   * There is no translate or scale movement.
+   */
+  .liquid-glass-interactive:hover {
+    background: rgba(255, 255, 255, 0.07);
 
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
-    inset 1px 0 0 rgba(255, 255, 255, 0.3),
-    inset -1px 0 0 rgba(255, 255, 255, 0.18),
-    0 6px 20px rgba(42, 30, 18, 0.09);
-}
+    border-color: rgba(255, 255, 255, 0.72);
 
-.liquid-glass-interactive:active {
-  background: rgba(255, 255, 255, 0.12);
-}
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+      inset 1px 0 0 rgba(255, 255, 255, 0.3),
+      inset -1px 0 0 rgba(255, 255, 255, 0.18),
+      0 6px 20px rgba(42, 30, 18, 0.09);
+  }
+
+  /*
+   * Clicking slightly increases opacity without moving the box.
+   */
+  .liquid-glass-interactive:active {
+    background: rgba(255, 255, 255, 0.12);
+
+    border-color: rgba(255, 255, 255, 0.82);
+  }
+
+  /*
+   * Disable visual transitions for users who prefer reduced motion.
+   */
   @media (prefers-reduced-motion: reduce) {
     .liquid-glass-interactive {
       transition: none;
     }
+  }
+}
 
-    .liquid-glass-interactive:hover,
-    .liquid-glass-interactive:active {
-      transform: none;
-    }
+
+@keyframes blink-dot {
+  0%, 50% {
+    opacity: 1;
+  }
+
+  51%, 100% {
+    opacity: 0;
   }
 }
 
@@ -189,12 +237,6 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -204,7 +246,13 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
 }
