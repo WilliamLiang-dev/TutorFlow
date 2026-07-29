@@ -2,8 +2,6 @@
 
 const teacherID = "user_teacher_1";
 
-
-
 import {
   lessons,
   teachingAssignments,
@@ -24,6 +22,17 @@ import { useCalendar } from "./use-calendar";
 
 export default function Calendar() {
   const calendar = useCalendar();
+  const teacherLessons = lessons.filter((lesson) => {
+    const assignment = teachingAssignments.find(
+      (assignment) => assignment.id === lesson.assignmentId
+    );
+
+    const connection = teacherStudentConnections.find(
+      (connection) => connection.id === assignment?.connectionId
+    );
+
+    return connection?.teacherId === teacherID;
+  });
 
     const {
     view,
@@ -188,7 +197,7 @@ export default function Calendar() {
 
           {/* Seven weekday columns */}
           {weekDays.map((day) => {
-            const lessonsForDay = lessons.filter(
+            const lessonsForDay = teacherLessons.filter(
               (lesson) => lesson.date === day.dateISO
             );
 
