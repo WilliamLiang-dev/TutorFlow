@@ -61,7 +61,7 @@ export default function Calendar() {
           <button
             type="button"
             onClick={goToToday}
-            className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
+            className="rounded-full transition-color duration-100 ease-in-out border border-black bg-black px-4 py-2 text-sm font-semibold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 hover:bg-transparent hover:text-black"
           >
             Today
           </button>
@@ -111,7 +111,7 @@ export default function Calendar() {
         onClick={goToPreviousWeek}
         onPointerDown={(event) => event.stopPropagation()}
         aria-label="Previous week"
-        className="absolute -left-9 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-4xl text-black transition-transform duration-200 hover:scale-150 "
+        className="absolute -left-9 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-4xl text-black transition-transform duration-150 ease-in-out hover:scale-150 "
       >
         ‹
       </button>
@@ -121,7 +121,7 @@ export default function Calendar() {
         onClick={goToNextWeek}
         onPointerDown={(event) => event.stopPropagation()}
         aria-label="Next week"
-        className="absolute -right-9 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-4xl text-black transition-transform duration-200 hover:scale-150"
+        className="absolute -right-9 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-4xl text-black transition-transform duration-150 ease-in-out hover:scale-150"
       >
         ›
       </button>

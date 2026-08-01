@@ -1,36 +1,245 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TutorFlow
+
+TutorFlow is a tutoring management web application designed to help private tutors manage students, lesson schedules, lesson records, and confirmation workflows in one place.
+
+The project is currently under active development.
+
+## Project Motivation
+
+Private tutors often manage lesson schedules, student information, homework, lesson records, and confirmations across different tools such as calendars, spreadsheets, and messaging applications.
+
+TutorFlow aims to combine these tasks into one system and reduce the need for manual reminders between tutors and students.
+
+## Current Features
+
+- Custom weekly calendar interface
+- Student overview and student preview cards
+- Student search
+- Teacher-student connection management
+- Multiple subject assignments for each student
+- Different default hourly rates for each subject
+- Lesson record structure
+- Teacher and student lesson verification
+- Responsive dashboard layout
+- Placeholder data for frontend development
+
+## Core Data Model
+
+### TeacherStudentConnection
+
+Represents the relationship between one teacher and one student.
+
+It stores information such as:
+
+- Teacher ID
+- Student ID
+- Connection status
+- Student card colour
+- Student display order
+
+### TeachingAssignment
+
+Represents a subject taught under a teacher-student connection.
+
+One teacher may teach the same student multiple subjects.
+
+Each assignment stores:
+
+- Subject
+- Default hourly rate
+- Assignment status
+
+### Lesson
+
+Represents one actual tutoring session.
+
+Each lesson may contain:
+
+- Date
+- Start and end time
+- Subject
+- Hourly rate
+- Teacher comments
+- Homework
+- Teacher verification
+- Student verification
+- Lesson status
+- Cancellation information
+
+The main relationship is:
+
+```text
+Lesson
+-> TeachingAssignment
+-> TeacherStudentConnection
+-> Teacher and Student
+```
+
+## Planned MVP Workflow
+
+```text
+Teacher signs in
+-> adds or invites a student
+-> creates a lesson
+-> records lesson details
+-> confirms the lesson
+-> student receives a web push notification
+-> student reviews and confirms the lesson
+-> teacher receives a confirmation notification
+```
+
+## Planned Features
+
+- Google authentication
+- Student email invitations
+- Teacher and student profile settings
+- Editable display names and avatars
+- Lesson creation and editing
+- Dual lesson confirmation
+- Real web push notifications
+- Recurring lesson generation
+- Drag-and-drop calendar rescheduling
+- Mobile-responsive interface
+- Student lesson history
+- Invoice generation
+- File sharing
+
+## Technology Stack
+
+### Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+### Development Tools
+
+- Git
+- GitHub
+- VS Code
+- pnpm
+- Vercel
+
+### Backend and Database
+
+Planned or under integration:
+
+- PostgreSQL
+- Neon
+- Server-side authentication
+- Server-side authorization
 
 ## Getting Started
 
-First, run the development server:
+### Requirements
+
+- Node.js
+- pnpm
+
+### Installation
+
+Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/WilliamLiang-dev/TutorFlow.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Enter the project directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd TutorFlow
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Install dependencies:
 
-## Learn More
+```bash
+pnpm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Start the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open the application in your browser:
 
-## Deploy on Vercel
+```text
+http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Available Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Start the development server:
+
+```bash
+pnpm dev
+```
+
+Create a production build:
+
+```bash
+pnpm build
+```
+
+Start the production server:
+
+```bash
+pnpm start
+```
+
+Run the project linter:
+
+```bash
+pnpm lint
+```
+
+## Development Roadmap
+
+### Stage 1: Frontend Prototype
+
+- Build the dashboard interface
+- Build the custom weekly calendar
+- Build the student overview
+- Create student preview cards
+- Test data relationships using placeholder data
+
+### Stage 2: Backend Integration
+
+- Add authentication
+- Connect PostgreSQL
+- Add teacher and student authorization
+- Replace placeholder data with database queries
+
+### Stage 3: Core Workflow
+
+- Add student invitations
+- Add lesson creation
+- Add teacher and student confirmation
+- Add real web push notifications
+
+### Stage 4: Productivity Features
+
+- Add recurring lesson generation
+- Add drag-and-drop lesson rescheduling
+- Improve the mobile interface
+- Add invoice generation
+- Add file sharing
+
+## Current Limitations
+
+- Major frontend sections currently use placeholder data
+- Authentication is not fully connected
+- Student invitation acceptance is not implemented
+- Web push notifications are not implemented
+- Calendar drag-and-drop is not implemented
+- Recurring lesson generation is not implemented
+- Invoice and file-sharing features are not implemented
+
+
+## Author
+
+William Liang
+
+Computer Engineering student at The Hong Kong University of Science and Technology

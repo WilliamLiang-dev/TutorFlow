@@ -8,16 +8,55 @@ import {
 } from "@/app/lib/placeholder-data";
 
 import Search from "./search";
-import { UserPlusIcon } from "@heroicons/react/24/outline";
 
 const teacherID = "user_teacher_11"
+
+type StudentCardData = {
+  connectionId: string;
+  studentId: string;
+  name: string;
+  level: string;
+  cardColor: string;
+  assignments: {
+    id: string;
+    subject: string;
+    defaultHourlyRate: number;
+  }[];
+};
+
 export default function StudentTab(){
-  const studentOfTeacher = teacherStudentConnections.filter(
-    (teacher) => teacher.teacherId === teacherID
-  );
-  console.log(studentOfTeacher);
+  const studentCards: StudentCardData[] = 
+    teacherStudentConnections.filter(
+      (connection) => connection.teacherId === teacherID && connection.status === "active"
+    ).flatMap((connection) => {
+      const student = students.find(
+        (student) => student.id === connection.studentId
+      );
+      if (!student) {
+        return [];
+      }
+      const studentAssignment = teachingAssignments.filter(
+        (assignment) => assignment.connectionId === connection.id && assignment.status === "active"
+      ).map(
+        (assignment) => ({
+          id: assignment.id,
+          subject: assignment.subject,
+          defaultHourlyRate: assignment.defaultHourlyRate
+        })
+      );
+      return [
+        {
+          connectionId: connection.id,
+          studentId: student.id,
+          name: student.name,
+          level: student.level,
+          cardColor: connection.cardColor,
+          assignments: studentAssignment,
 
+        }
+      ]}
 
+    )
   return (
   <div className="flex h-full flex-col">
       <div className="flex items-center gap-3">
@@ -30,17 +69,17 @@ export default function StudentTab(){
           type="button"
           aria-label="Add student"
           title="Add student"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-xl font-semibold text-white transition-colors hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
+          className="flex border transition-colors duration-150 ease-in-out border-black h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-xl font-semibold text-white transition-colors hover:bg-transparent hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
         >
          <span className="-translate-y-[1px]"> + </span> 
         </button>
         {/* Student Preview */}
-        {studentOfTeacher.length === 0 ? (
+        {studentCards.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             {/* Text and arrow pointing toward + button */}
             <div className="absolute right-18 top-25 flex items-end gap-2">
-              <div className="pb-3 text-right">
-                <p className="text-sm font-medium text-black/70">
+              <div className="text-right">
+                <p className="text-sm font-medium text-black/40">
                   Add your first student
                 </p>
               </div>
@@ -67,12 +106,7 @@ export default function StudentTab(){
                 </defs>
 
                 <path
-                  d="
-                      M0 80
-                      C35 75, 60 65, 55 45
-                      C50 25, 25 25, 30 43
-                      C35 62, 72 48, 88 8
-                    "
+                  d="M10 90 C45 80, 75 55, 88 8"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"

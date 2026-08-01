@@ -39,7 +39,6 @@ export type TeacherStudentConnection = {
 
   cardColor: string;
 
-  tabOrder: number;
 
   createdAt: string;
   status: ConnectionStatus;
