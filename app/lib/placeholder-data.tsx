@@ -371,15 +371,16 @@ export const scheduleChangeRequests: ScheduleChangeRequest[] = [
 
 
 export const lessons: Lesson[] = [
+  // Past lesson — Jason
   {
     id: "lesson_1",
     assignmentId: "assignment_1",
 
     scheduleVersionId: "schedule_version_1_current",
     source: "recurring",
-    occurrenceDate: "2026-07-06",
+    occurrenceDate: "2026-08-03",
 
-    date: "2026-07-06",
+    date: "2026-08-03",
     startTime: "08:00",
     endTime: "09:30",
 
@@ -402,18 +403,20 @@ export const lessons: Lesson[] = [
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-06-29",
-    updatedAt: "2026-07-06",
+    createdAt: "2026-07-30",
+    updatedAt: "2026-08-03",
   },
+
+  // Past lesson — Emily
   {
     id: "lesson_2",
     assignmentId: "assignment_3",
 
     scheduleVersionId: "schedule_version_2_current",
     source: "recurring",
-    occurrenceDate: "2026-07-07",
+    occurrenceDate: "2026-08-05",
 
-    date: "2026-07-07",
+    date: "2026-08-05",
     startTime: "10:00",
     endTime: "11:30",
 
@@ -436,18 +439,20 @@ export const lessons: Lesson[] = [
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-06-30",
-    updatedAt: "2026-07-07",
+    createdAt: "2026-08-01",
+    updatedAt: "2026-08-05",
   },
+
+  // Future lesson — Marcus
   {
     id: "lesson_3",
     assignmentId: "assignment_5",
 
     scheduleVersionId: "schedule_version_3_current",
     source: "recurring",
-    occurrenceDate: "2026-07-09",
+    occurrenceDate: "2026-08-08",
 
-    date: "2026-07-09",
+    date: "2026-08-08",
     startTime: "13:00",
     endTime: "15:00",
 
@@ -469,18 +474,20 @@ export const lessons: Lesson[] = [
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-07-02",
-    updatedAt: "2026-07-02",
+    createdAt: "2026-08-02",
+    updatedAt: "2026-08-02",
   },
+
+  // Future lesson — Emily
   {
     id: "lesson_4",
     assignmentId: "assignment_4",
 
     scheduleVersionId: "schedule_version_4_current",
     source: "recurring",
-    occurrenceDate: "2026-07-10",
+    occurrenceDate: "2026-08-10",
 
-    date: "2026-07-10",
+    date: "2026-08-10",
     startTime: "16:00",
     endTime: "17:30",
 
@@ -488,14 +495,13 @@ export const lessons: Lesson[] = [
     hourlyRate: 480,
     currency: "HKD",
 
-    teacherVerified: true,
+    teacherVerified: false,
     studentVerified: false,
 
-    teacherComment:
-      "Emily understood cell structure well, but needs to memorize key terminology more accurately.",
-    homework: "Complete cell biology worksheet.",
+    teacherComment: "",
+    homework: "",
 
-    status: "pending_verification",
+    status: "scheduled",
 
     createdByUserId: "user_teacher_2",
     updatedByUserId: "user_teacher_2",
@@ -503,29 +509,25 @@ export const lessons: Lesson[] = [
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-07-03",
-    updatedAt: "2026-07-10",
+    createdAt: "2026-08-04",
+    updatedAt: "2026-08-04",
   },
+
+  // Past lesson — Emily
   {
     id: "lesson_5",
     assignmentId: "assignment_6",
 
     scheduleVersionId: "schedule_version_5_current",
     source: "recurring",
-    occurrenceDate: "2026-07-08",
+    occurrenceDate: "2026-08-06",
 
-    date: "2026-07-08",
+    date: "2026-08-06",
     startTime: "14:00",
     endTime: "15:30",
 
     subjectSnapshot: "Chemistry",
-
-    /*
-     * This uses the schedule override rather than the
-     * assignment default of HK$520.
-     */
     hourlyRate: 550,
-
     currency: "HKD",
 
     teacherVerified: true,
@@ -543,15 +545,11 @@ export const lessons: Lesson[] = [
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-07-01",
-    updatedAt: "2026-07-08",
+    createdAt: "2026-08-01",
+    updatedAt: "2026-08-06",
   },
 
-  /*
-   * Extra manually added lesson.
-   *
-   * It has no schedule version and no recurring occurrence date.
-   */
+  // Future manual lesson — Jason
   {
     id: "lesson_6",
     assignmentId: "assignment_1",
@@ -560,7 +558,7 @@ export const lessons: Lesson[] = [
     source: "manual",
     occurrenceDate: null,
 
-    date: "2026-07-11",
+    date: "2026-08-09",
     startTime: "11:00",
     endTime: "12:30",
 
@@ -569,41 +567,33 @@ export const lessons: Lesson[] = [
     currency: "HKD",
 
     teacherVerified: false,
-    studentVerified: true,
+    studentVerified: false,
 
     teacherComment: "",
     homework: "Prepare questions from the quadratic equations revision.",
 
-    status: "pending_verification",
+    status: "scheduled",
 
-    /*
-     * Jason requested this extra lesson.
-     */
     createdByUserId: "user_student_1",
     updatedByUserId: "user_student_1",
 
     cancelledByUserId: null,
     cancellationReason: null,
 
-    createdAt: "2026-07-09",
-    updatedAt: "2026-07-09",
+    createdAt: "2026-08-06",
+    updatedAt: "2026-08-06",
   },
 
-  /*
-   * Cancelled recurring occurrence.
-   *
-   * The record remains so that the lesson generator does not
-   * recreate this date later.
-   */
+  // Future but cancelled — should NOT become nextLesson
   {
     id: "lesson_7",
     assignmentId: "assignment_3",
 
     scheduleVersionId: "schedule_version_2_current",
     source: "recurring",
-    occurrenceDate: "2026-07-14",
+    occurrenceDate: "2026-08-11",
 
-    date: "2026-07-14",
+    date: "2026-08-11",
     startTime: "10:00",
     endTime: "11:30",
 
@@ -625,7 +615,42 @@ export const lessons: Lesson[] = [
     cancelledByUserId: "user_student_2",
     cancellationReason: "School activity",
 
-    createdAt: "2026-07-07",
-    updatedAt: "2026-07-12",
+    createdAt: "2026-08-05",
+    updatedAt: "2026-08-07",
+  },
+
+  // Later today — useful for testing time comparison
+  {
+    id: "lesson_8",
+    assignmentId: "assignment_3",
+
+    scheduleVersionId: null,
+    source: "manual",
+    occurrenceDate: null,
+
+    date: "2026-08-07",
+    startTime: "15:00",
+    endTime: "16:30",
+
+    subjectSnapshot: "Chemistry",
+    hourlyRate: 500,
+    currency: "HKD",
+
+    teacherVerified: false,
+    studentVerified: false,
+
+    teacherComment: "",
+    homework: "",
+
+    status: "scheduled",
+
+    createdByUserId: "user_teacher_1",
+    updatedByUserId: "user_teacher_1",
+
+    cancelledByUserId: null,
+    cancellationReason: null,
+
+    createdAt: "2026-08-06",
+    updatedAt: "2026-08-06",
   },
 ];
