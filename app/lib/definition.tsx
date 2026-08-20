@@ -12,9 +12,11 @@ export type User = {
 
 export type Student = {
   id: string;
+  userId: string | null;
   name: string;
   email: string;
   level: string;
+  creatAt: string;
 };
 
 
@@ -22,6 +24,7 @@ export type Teacher = {
   id: string;
   name: string;
   email: string;
+  creatAt: string;
 };
 
 
@@ -42,6 +45,8 @@ export type TeacherStudentConnection = {
 
   createdAt: string;
   status: ConnectionStatus;
+
+  endAt: string | null;
 };
 
 
@@ -52,10 +57,11 @@ export type AssignmentStatus =
 
 export type TeachingAssignment = {
   id: string;
-
   connectionId: string;
 
   subject: string;
+  syllabus: string | null;
+  level: string | null;
 
   defaultHourlyRate: number;
 
