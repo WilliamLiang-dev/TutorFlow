@@ -9,19 +9,20 @@ import {
 
 import Search from "./search";
 import LiquidGlass from "../liquid-glass";
+import AddStudentForm from "./add-student-form";
 import { useState, useRef, useEffect } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
 const teacherID = "user_teacher_1";
 
-function formatTime(time: string){
+function formatTime(time: string) {
   const [hourString, minute] = time.split(":");
   const hour = Number(hourString);
   const period = hour >= 12 ? "p.m." : "a.m.";
   const hour12 = hour % 12 || 12;
-  return minute === "00" 
-  ? `${hour12} ${period}`
-  : `${hour12}:${minute} ${period}`
+  return minute === "00"
+    ? `${hour12} ${period}`
+    : `${hour12}:${minute} ${period}`
 }
 
 function formatDate(date: string) {
@@ -62,89 +63,9 @@ type StudentCardData = {
 export default function StudentTab() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
-  const [syllabus, setSyllabus] = useState("");
+
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const syllabusOptions = {
-    HKDSE: {
-      subjects: [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Geography",
-        "History",
-        "ICT",
-      ],
-      levels: [
-        "P1",
-        "P2",
-        "P3",
-        "P4",
-        "P5",
-        "P6",
-        "F1",
-        "F2",
-        "F3",
-        "F4",
-        "F5",
-        "F6",
-      ],
-      levelLabel: "Level",
-    },
 
-    IGCSE: {
-      subjects: [
-        "Mathematics",
-        "Additional Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Business",
-        "Computer Science",
-        "Geography",
-        "History",
-      ],
-      levels: [
-        "Year 9",
-        "Year 10",
-        "Year 11",
-      ],
-      levelLabel: "Year",
-    },
-
-    IB: {
-      subjects: [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Business Management",
-        "Computer Science",
-        "Geography",
-        "History",
-      ],
-      levels: [
-        "PYP",
-        "MYP 1",
-        "MYP 2",
-        "MYP 3",
-        "MYP 4",
-        "MYP 5",
-        "DP 1",
-        "DP 2",
-      ],
-      levelLabel: "Level",
-    },
-  };
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -288,39 +209,38 @@ export default function StudentTab() {
         <div className="flex flex-col gap-3">
           {studentCards.map((card) => (
             <div
-            key={card.connectionId}
-            className={`relative ${
-              openMenuId === card.connectionId ? "z-50" :"z-0"
-            }`}>
-            <LiquidGlass className="rounded-2xl items-center overflow-visible"
-            key={card.connectionId}>
-              <article className="flex items-center w-full h-20 p-3 gap-3 group">
-                <div className="flex rounded-full bg-white h-10 w-10 justify-center items-center"
-                style={{
-                  color: card.cardColor
-                }}>
-                  {card.displayName[0]}
-                </div>
-                <div>
-                  <p className="text-base">
-                    {card.displayName}
-                  </p>
-                  <p className="text-xs">
-                    {card.level}  {card.subjects}
-                  </p>
-                </div>
-                {card.nextLesson === null ? (
-                  <p className="text-red-400 p-5">
-                    No upcoming lesson
-                  </p>
-                ): (
-                  <div className="flex items-center justify-center p-5">
-                    Next lesson: {formatTime(card.nextLesson.startTime)}{" · "}{formatDate(card.nextLesson.date)}
+              key={card.connectionId}
+              className={`relative ${openMenuId === card.connectionId ? "z-50" : "z-0"
+                }`}>
+              <LiquidGlass className="rounded-2xl items-center overflow-visible"
+                key={card.connectionId}>
+                <article className="flex items-center w-full h-20 p-3 gap-3 group">
+                  <div className="flex rounded-full bg-white h-10 w-10 justify-center items-center"
+                    style={{
+                      color: card.cardColor
+                    }}>
+                    {card.displayName[0]}
                   </div>
-                )}
-                <div className="ml-auto flex items-center gap-5">
-                  <div
-                    className="
+                  <div>
+                    <p className="text-base">
+                      {card.displayName}
+                    </p>
+                    <p className="text-xs">
+                      {card.level}  {card.subjects}
+                    </p>
+                  </div>
+                  {card.nextLesson === null ? (
+                    <p className="text-red-400 p-5">
+                      No upcoming lesson
+                    </p>
+                  ) : (
+                    <div className="flex items-center justify-center p-5">
+                      Next lesson: {formatTime(card.nextLesson.startTime)}{" · "}{formatDate(card.nextLesson.date)}
+                    </div>
+                  )}
+                  <div className="ml-auto flex items-center gap-5">
+                    <div
+                      className="
                       flex items-center gap-3
                       text-ml
                       opacity-0
@@ -331,151 +251,63 @@ export default function StudentTab() {
                       group-focus-within:opacity-100
                       group-focus-within:pointer-events-auto
                     "
-                  >
-                  <button className="text-black/80 opacity-0 group-hover:opacity-100">
-                    Prepare
-                  </button>
-                  <span className="text-black/30 opacity-0 group-hover:opacity-100"> / </span>
-                  <button className="text-black/80 opacity-0 group-hover:opacity-100">
-                    Logs
-                  </button>
-                </div>
-                <div 
-                ref={
-                  openMenuId === card.connectionId
-                  ? menuRef
-                  : null
-                }
-                className="relative">
-                  <button
-                  type="button"
-                  onClick={() => 
-                    setOpenMenuId(
-                      openMenuId === card.connectionId
-                      ? null 
-                      : card.connectionId
-                    )
-                  }
-                  className="cursor-pointer flex items-center justify-center">
-                  <EllipsisVerticalIcon className="h-7 w-7" />
-                  </button>
-                  </div>
-                  {openMenuId === card.connectionId && (
-                    <div className="absolute right-10 -top-3 z-20 w-40 p-1 rounded-xl bg-white">
-                      <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-left text-sm hover:bg-black/5">
-                        Rename
+                    >
+                      <button className="text-black/80 opacity-0 group-hover:opacity-100">
+                        Prepare
                       </button>
-                      <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-red-400 text-left text-sm hover:bg-black/5">
-                        Remove student
-                      </button>
-                      <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-left text-sm hover:bg-black/5">
-                        Setting
+                      <span className="text-black/30 opacity-0 group-hover:opacity-100"> / </span>
+                      <button className="text-black/80 opacity-0 group-hover:opacity-100">
+                        Logs
                       </button>
                     </div>
-                  )}
-                </div>
+                    <div
+                      ref={
+                        openMenuId === card.connectionId
+                          ? menuRef
+                          : null
+                      }
+                      className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenuId(
+                            openMenuId === card.connectionId
+                              ? null
+                              : card.connectionId
+                          )
+                        }
+                        className="cursor-pointer flex items-center justify-center">
+                        <EllipsisVerticalIcon className="h-7 w-7" />
+                      </button>
+                    </div>
+                    {openMenuId === card.connectionId && (
+                      <div className="absolute right-10 -top-3 z-20 w-40 p-1 rounded-xl bg-white">
+                        <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-left text-sm hover:bg-black/5">
+                          Rename
+                        </button>
+                        <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-left text-sm hover:bg-black/5">
+                          Setting
+                        </button>
+                        <button className="w-full whitespace-nowrap rounded-lg px-5 py-2 text-red-400 text-left text-sm hover:bg-black/5">
+                          Remove student
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </article>
-            </LiquidGlass>
+              </LiquidGlass>
             </div>
           ))}
 
         </div>
-      )} 
+      )}
       {showAddStudentForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <form className="w-full max-w-md space-y-4 rounded-xl bg-white/100 p-6">
-            <div>
-              <label className="block text-sm">
-                Name:
-              </label>
-              <input
-                type="text"
-                className="mt-1 w-full rounded border border-zinc-500 px-3 py-2 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm">
-                Email:
-              </label>
-              <input
-              type="text"
-              className="mt-1 w-full rounded border border-zinc-500 px-1 py-2 focus:outline-none"
-              />
-            </div>
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-4">
-              <div className="flex flex-col text-sm">
-                  <label>
-                    Syllabus:
-                  </label>
-                  <select 
-                  name="syllabus"
-                  value={syllabus}
-                  onChange={(event) => setSyllabus(event.target.value)}
-                  className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
-                  >
-                    <option value=""></option>
-                    {Object.keys(syllabusOptions).map((syllabusOptions) =>
-                    <option
-                      key={syllabusOptions}
-                      value={syllabusOptions}>
-                        {syllabusOptions}
-                    </option>)}
-                  </select>
-              </div>
-              <div className="flex flex-1 flex-col text-sm">
-                <label className="">
-                  Subject:
-                </label>
-                <select
-                name="subject"
-                className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                  <option value=""></option>
-                  {syllabus && (
-                    syllabusOptions[
-                      syllabus as keyof typeof syllabusOptions
-                    ].subjects.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-              <div className="flex flex-1 flex-col text-sm">
-                <label>
-                  Level:
-                </label>
-                <select
-                name="level"
-                className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                  <option value=""></option>
-                  {syllabus && (
-                    syllabusOptions[
-                      syllabus as keyof typeof syllabusOptions
-                    ].levels.map((level) => (
-                      <option key={level} value ={level}>
-                        {level}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-5">
-              <button className="bg-black rounded-xl text-white px-3 py-1 text-lg">
-                Send
-              </button>
-              <button 
-              className="cursor-pointer"
-              onClick={() => setShowAddStudentForm(false)}>
-                Cancel
-              </button>
-            </div>
-
-          </form>
-
+          <AddStudentForm
+            onCancel={() => setShowAddStudentForm(false)}
+          />
         </div>
       )}
-      </div>
+    </div>
   )
 }
