@@ -15,7 +15,9 @@ export default function AddStudentForm({
         academicDetails?: string;
     }>({});
 
-    const [syllabus, setSyllabus] = useState("");
+    const [rows, setRows] = useState([
+      {syllabus: "", subject: "", level: ""}
+    ]);
 
     const syllabusOptions = {
     HKDSE: {
@@ -148,11 +150,33 @@ export default function AddStudentForm({
             return;
         }
     }
+    function updateRow(
+      index: number,
+      field: "syllabus" | "subject" | "level",
+      value: string
+    ) {
+      setRows(previousRows =>
+        previousRows.map((row, rowIndex) => {
+          if (rowIndex !== index) return row;
+
+          if (field === "syllabus") {
+            return { ...row, syllabus: value, subject: "", level: "" }
+          }
+
+          return {...row, [field]: value}
+        }
+        )
+      )
+
+    }
     return (
         <form
             onSubmit={handleSubmit}
             noValidate
-            className="w-full max-w-md space-y-4 rounded-md bg-white/100 p-6">
+            className={`w-full space-y-4 rounded-md bg-white p-6 
+              transition-[max-width] ease-in-out duration-300 ${
+              rows.length > 1 ? "max-w-[31rem]" : "max-w-md"
+            }`}>
             <div>
               <div className="relative">
                 <input
@@ -267,68 +291,96 @@ export default function AddStudentForm({
               </div>
             </div>
             </div>
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-4 h-11">
-              <div className="flex flex-col text-sm">
-                <label className="pb-1">
-                  Syllabus:
-                </label>
-                <select
-                  id="syllabus"
-                  name="syllabus"
-                  value={syllabus}
-                  onChange={(event) => setSyllabus(event.target.value)}
-                  className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
+            {rows.map((row, index) => (
+              <div key={index}>
+                <div
+                  className={`grid gap-4 ${
+                    rows.length > 1
+                      ? "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_1rem]"
+                      : "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
+                  }`}
                 >
-                  <option value=""></option>
-                  {Object.keys(syllabusOptions).map((syllabusOptions) =>
-                    <option
-                      key={syllabusOptions}
-                      value={syllabusOptions}>
-                      {syllabusOptions}
-                    </option>)}
-                </select>
+                <div className="flex flex-col text-sm">
+                  <label className="pb-1">
+                    Syllabus:
+                  </label>
+                  <select
+                    id="syllabus"
+                    name="syllabus"
+                    value={row.syllabus}
+                    onChange={(event) => updateRow(index, "syllabus", event.target.value)}
+                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
+                  >
+                    <option value=""></option>
+                    {Object.keys(syllabusOptions).map((syllabusOptions) =>
+                      <option
+                        key={syllabusOptions}
+                        value={syllabusOptions}>
+                        {syllabusOptions}
+                      </option>)}
+                  </select>
+                </div>
+                <div className="flex flex-1 flex-col text-sm">
+                  <label className="pb-1">
+                    Subject:
+                  </label>
+                  <select
+                    id="subject"
+                    name="subject"
+                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
+                    <option value=""></option>
+                    {row.syllabus && (
+                      syllabusOptions[
+                        row.syllabus as keyof typeof syllabusOptions
+                      ].subjects.map((subject) => (
+                        <option key={subject} value={subject}>
+                          {subject}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div className="flex flex-1 flex-col text-sm">
+                  <label className="pb-1">
+                    Level:
+                  </label>
+                  <select
+                    id="level"
+                    name="level"
+                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
+                    <option value=""></option>
+                    {row.syllabus && (
+                      syllabusOptions[
+                        row.syllabus as keyof typeof syllabusOptions
+                      ].levels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                {rows.length > 1 && (
+                  <div className="flex h-10 items-center justify-center self-end">
+                    {index >= 1 && (
+                      <button
+                      type="button"
+                      className="flex items-center justify-center rounded-full h-4 w-4 bg-[#ed2027] cursor-pointer"
+                      onClick={() => {
+                        setRows(previousRows =>
+                          previousRows.filter((_, rowIndex) => rowIndex !== index)
+                        )
+                      }}>
+                      <span className="text-white -translate-y-[1px]">
+                        -
+                      </span>
+                    </button>
+                    )}
+                    </div>
+                )}
+                </div>
               </div>
-              <div className="flex flex-1 flex-col text-sm">
-                <label className="pb-1">
-                  Subject:
-                </label>
-                <select
-                  id="subject"
-                  name="subject"
-                  className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                  <option value=""></option>
-                  {syllabus && (
-                    syllabusOptions[
-                      syllabus as keyof typeof syllabusOptions
-                    ].subjects.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-              <div className="flex flex-1 flex-col text-sm">
-                <label className="pb-1">
-                  Level:
-                </label>
-                <select
-                  id="level"
-                  name="level"
-                  className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                  <option value=""></option>
-                  {syllabus && (
-                    syllabusOptions[
-                      syllabus as keyof typeof syllabusOptions
-                    ].levels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-            </div>
+            ))}
             <div
               className={`
                 grid transition-[grid-template-rows] duration-200
@@ -344,10 +396,17 @@ export default function AddStudentForm({
                 </div>
             </div>
 
-            <div className="pt-3">
-              <button className="text-zinc-500 cursor-pointer inline-flex gap-3">
-                <span>+</span>
-                <span>Add button</span>
+            <div className="pt-1">
+              <button 
+              className="flex items-center justify-center cursor-pointer inline-flex gap-3 rounded-full bg-[#0d9647] h-6 w-6"
+              type="button"
+              onClick={() => {
+                setRows(previousRows => [
+                  ... previousRows,
+                  {syllabus:"", subject:"", level:""},
+                ])
+              }}>
+              <span className="text-white -translate-y-[1px]">+</span>
               </button>
             </div>
             <div className="flex justify-end gap-5">
