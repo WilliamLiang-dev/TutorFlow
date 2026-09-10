@@ -1,8 +1,7 @@
 "use client";
 
-const teacherID = "user_teacher_1";
 
-import { CalendarLesson } from "@/app/lib/calendar";
+import type { CalendarLesson } from "@/app/lib/calendar";
 
 import {
   formatHour,
