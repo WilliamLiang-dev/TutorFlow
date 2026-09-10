@@ -12,7 +12,7 @@ export default function AddStudentForm({
     const [errors, setErrors] = useState<{
         name?: string;
         email?: string;
-        academicDetails?: string;
+        academicDetails?: string[];
     }>({});
 
     const [rows, setRows] = useState([
@@ -100,30 +100,23 @@ export default function AddStudentForm({
       levelLabel: "Level",
     },
   };
-
+    function joinWithAnd(items: string[]) {
+      if (items.length === 1) {
+        return items[0];
+      }
+      return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
+    }
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const name = String(formData.get("name") ?? "").trim();
         const email = String(formData.get("email") ?? "").trim();
-        const syllabus= String(formData.get("syllabus") ?? "").trim();
-        const subject= String(formData.get("subject") ?? "").trim();
-        const level = String(formData.get("level") ?? "").trim();
 
         const newErrors: {
             name?: string;
             email?: string;
-            academicDetails?: string;
+            academicDetails?: string[];
         } = {};
-
-        function joinWithAnd(items: string[]) {
-          if (items.length === 1) {
-            return items[0];
-          }
-
-          return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
-        }
-        const missingFields: string[] = [];
 
         if (!name) {
             newErrors.name = "Please enter the student's name"
@@ -131,18 +124,26 @@ export default function AddStudentForm({
         if (!email) {
             newErrors.email = "Please enter the student's email"
         }
-        if (!syllabus) {
-            missingFields.push("syllabus")
-        }
-        if (!subject) {
-            missingFields.push("subject")
-        }
-        if (!level) {
-            missingFields.push("level")
-        }
 
-        if (missingFields.length > 0) {
-          newErrors.academicDetails = `Please select ${joinWithAnd(missingFields)}`
+        const rowErrors = rows.map((row) => {
+          const missingFields: string[] = [];
+
+          if (!row.syllabus) {
+            missingFields.push("syllabus")
+          }
+          if (!row.subject) {
+              missingFields.push("subject")
+          }
+          if (!row.level) {
+              missingFields.push("level")
+          }
+
+          return (missingFields.length > 0)
+            ? `Please select ${joinWithAnd(missingFields)}`
+            : "";
+        })
+        if (rowErrors.some((message) => message !== "")) {
+          newErrors.academicDetails = rowErrors;
         }
 
         setErrors(newErrors);
@@ -150,25 +151,47 @@ export default function AddStudentForm({
             return;
         }
     }
+
     function updateRow(
       index: number,
       field: "syllabus" | "subject" | "level",
       value: string
     ) {
+      const updatedRow =
+        field === "syllabus"
+        ? {...rows[index], syllabus: value, subject: "", level: ""}
+        : {...rows[index], [field]: value};
+
       setRows(previousRows =>
-        previousRows.map((row, rowIndex) => {
-          if (rowIndex !== index) return row;
-
-          if (field === "syllabus") {
-            return { ...row, syllabus: value, subject: "", level: "" }
-          }
-
-          return {...row, [field]: value}
-        }
+        previousRows.map((row, rowIndex) =>
+        rowIndex === index ? updatedRow : row
         )
-      )
+      );
 
+      setErrors(previousErrors => {
+        if (!previousErrors.academicDetails?.[index]) {
+          return previousErrors;
+        }
+        
+        const missingFields: string[] = [];
+
+        if (!updatedRow.syllabus) missingFields.push("syllabus");
+        if (!updatedRow.subject) missingFields.push("subject");
+        if (!updatedRow.level) missingFields.push("level");
+
+        const updatedErrors = [...previousErrors.academicDetails];
+
+        updatedErrors[index] = missingFields.length > 0
+        ? `Please select ${joinWithAnd(missingFields)}`
+        : "";
+
+        return {
+          ...previousErrors,
+          academicDetails: updatedErrors,
+        };
+      })
     }
+
     return (
         <form
             onSubmit={handleSubmit}
@@ -291,123 +314,136 @@ export default function AddStudentForm({
               </div>
             </div>
             </div>
-            {rows.map((row, index) => (
-              <div key={index}>
-                <div
-                  className={`grid gap-4 ${
-                    rows.length > 1
-                      ? "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_1rem]"
-                      : "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
-                  }`}
-                >
-                <div className="flex flex-col text-sm">
-                  <label className="pb-1">
-                    Syllabus:
-                  </label>
-                  <select
-                    id="syllabus"
-                    name="syllabus"
-                    value={row.syllabus}
-                    onChange={(event) => updateRow(index, "syllabus", event.target.value)}
-                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
-                  >
-                    <option value=""></option>
-                    {Object.keys(syllabusOptions).map((syllabusOptions) =>
-                      <option
-                        key={syllabusOptions}
-                        value={syllabusOptions}>
-                        {syllabusOptions}
-                      </option>)}
-                  </select>
-                </div>
-                <div className="flex flex-1 flex-col text-sm">
-                  <label className="pb-1">
-                    Subject:
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                    <option value=""></option>
-                    {row.syllabus && (
-                      syllabusOptions[
-                        row.syllabus as keyof typeof syllabusOptions
-                      ].subjects.map((subject) => (
-                        <option key={subject} value={subject}>
-                          {subject}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div className="flex flex-1 flex-col text-sm">
-                  <label className="pb-1">
-                    Level:
-                  </label>
-                  <select
-                    id="level"
-                    name="level"
-                    className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0">
-                    <option value=""></option>
-                    {row.syllabus && (
-                      syllabusOptions[
-                        row.syllabus as keyof typeof syllabusOptions
-                      ].levels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                {rows.length > 1 && (
-                  <div className="flex h-10 items-center justify-center self-end">
-                    {index >= 1 && (
-                      <button
-                      type="button"
-                      className="flex items-center justify-center rounded-full h-4 w-4 bg-[#ed2027] cursor-pointer"
-                      onClick={() => {
-                        setRows(previousRows =>
-                          previousRows.filter((_, rowIndex) => rowIndex !== index)
-                        )
-                      }}>
-                      <span className="text-white -translate-y-[1px]">
-                        -
-                      </span>
-                    </button>
+            <div className="space-y-1">
+              <div className="space-y-4">
+                {rows.map((row, index) => (
+                  <div key={index}>
+                    <div
+                      className={`grid gap-4 ${
+                        rows.length > 1
+                          ? "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_1rem]"
+                          : "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
+                      }`}
+                    >
+                    <div className="flex flex-col text-sm">
+                      <label className="pb-1">
+                        Syllabus:
+                      </label>
+                      <select
+                        id="syllabus"
+                        name="syllabus"
+                        value={row.syllabus}
+                        onChange={(event) => 
+                          updateRow(index, "syllabus", event.target.value)}
+                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
+                      >
+                        <option value=""></option>
+                        {Object.keys(syllabusOptions).map((syllabusOptions) =>
+                          <option
+                            key={syllabusOptions}
+                            value={syllabusOptions}>
+                            {syllabusOptions}
+                          </option>)}
+                      </select>
+                    </div>
+                    <div className="flex flex-1 flex-col text-sm">
+                      <label className="pb-1">
+                        Subject:
+                      </label>
+                      <select
+                        id="subject"
+                        name="subject"
+                        value={row.subject}
+                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
+                        onChange={(event) => {
+                          updateRow(index, "subject", event.target.value)
+                        }
+                        }>
+                        <option value=""></option>
+                        {row.syllabus && (
+                          syllabusOptions[
+                            row.syllabus as keyof typeof syllabusOptions
+                          ].subjects.map((subject) => (
+                            <option key={subject} value={subject}>
+                              {subject}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                    <div className="flex flex-1 flex-col text-sm">
+                      <label className="pb-1">
+                        Level:
+                      </label>
+                      <select
+                        id="level"
+                        name="level"
+                        value={row.level}
+                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
+                        onChange={(event) => 
+                          updateRow(index, "level", event.target.value)
+                        }>
+                        <option value=""></option>
+                        {row.syllabus && (
+                          syllabusOptions[
+                            row.syllabus as keyof typeof syllabusOptions
+                          ].levels.map((level) => (
+                            <option key={level} value={level}>
+                              {level}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                    {rows.length > 1 && (
+                      <div className="flex h-10 items-center justify-center self-end">
+                        {index >= 1 && (
+                          <button
+                          type="button"
+                          className="flex items-center justify-center rounded-full h-4 w-4 bg-[#ed2027] cursor-pointer"
+                          onClick={() => {
+                            setRows(previousRows =>
+                              previousRows.filter((_, rowIndex) => rowIndex !== index)
+                            )
+                          }}>
+                          <span className="text-white -translate-y-[1px]">
+                            -
+                          </span>
+                        </button>
+                        )}
+                        </div>
                     )}
                     </div>
-                )}
-                </div>
+                    <div
+                      className={`
+                        grid transition-[grid-template-rows] duration-200
+                        ${errors.academicDetails?.[index] ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
+                      `}
+                      >
+                        <div className="min-h-0 overflow-hidden">
+                          <p
+                            id="academicDetails"
+                            className="text-xs text-red-500">
+                            {errors.academicDetails?.[index]}
+                          </p>
+                        </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-            <div
-              className={`
-                grid transition-[grid-template-rows] duration-200
-                ${errors.academicDetails ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
-              `}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <p
-                    id="academicDetails"
-                    className="text-xs text-red-500">
-                    {errors.academicDetails}
-                  </p>
-                </div>
-            </div>
-
-            <div className="pt-1">
-              <button 
-              className="flex items-center justify-center cursor-pointer inline-flex gap-3 rounded-full bg-[#0d9647] h-6 w-6"
-              type="button"
-              onClick={() => {
-                setRows(previousRows => [
-                  ... previousRows,
-                  {syllabus:"", subject:"", level:""},
-                ])
-              }}>
-              <span className="text-white -translate-y-[1px]">+</span>
-              </button>
+              <div className="pt-3">
+                <button 
+                className="flex items-center justify-center cursor-pointer inline-flex rounded-full bg-[#0d9647] h-6 w-6"
+                type="button"
+                onClick={() => {
+                  setRows(previousRows => [
+                    ... previousRows,
+                    {syllabus:"", subject:"", level:""},
+                  ])
+                }}>
+                <span className="text-white -translate-y-[1px]">+</span>
+                </button>
+              </div>
             </div>
             <div className="flex justify-end gap-5">
               <button

@@ -2,12 +2,7 @@
 
 const teacherID = "user_teacher_1";
 
-import {
-  lessons,
-  teachingAssignments,
-  teacherStudentConnections,
-  students,
-} from "@/app/lib/placeholder-data";
+import { CalendarLesson } from "@/app/lib/calendar";
 
 import {
   formatHour,
@@ -21,19 +16,12 @@ import LiquidGlass from "../liquid-glass";
 import { useCalendar } from "./use-calendar";
 import { useState } from "react";
 
-export default function Calendar() {
-  const calendar = useCalendar();
-  const teacherLessons = lessons.filter((lesson) => {
-    const assignment = teachingAssignments.find(
-      (assignment) => assignment.id === lesson.assignmentId
-    );
-
-    const connection = teacherStudentConnections.find(
-      (connection) => connection.id === assignment?.connectionId
-    );
-
-    return connection?.teacherId === teacherID;
-  });
+export default function Calendar({
+  lessons,
+}: {
+  lessons: CalendarLesson[];
+}) {
+    const calendar = useCalendar();
 
     const {
     view,
@@ -198,7 +186,7 @@ export default function Calendar() {
 
           {/* Seven weekday columns */}
           {weekDays.map((day) => {
-            const lessonsForDay = teacherLessons.filter(
+            const lessonsForDay = lessons.filter(
               (lesson) => lesson.date === day.dateISO
             );
 
@@ -217,38 +205,23 @@ export default function Calendar() {
 
                 {/* Lesson cards */}
                 {lessonsForDay.map((lesson) => {
-                  const assignment = teachingAssignments.find(
-                    (assignment) => assignment.id === lesson.assignmentId
-                  );
-                  const connection = teacherStudentConnections.find(
-                    (connection) => connection.id === assignment?.connectionId
-                  );
-                  const start = timeStringToHour(
-                    lesson.startTime
-                  );
+                  const start = timeStringToHour(lesson.startTime);
+                  const end = timeStringToHour(lesson.endTime);
 
-                  const end = timeStringToHour(
-                    lesson.endTime
-                  );
-                  const student = students.find(
-                    (student) => student.id === connection?.studentId
-                  );
+                  const isConfirmed =
+                    lesson.teacherVerified && lesson.studentVerified;
 
                   return (
                     <article
                       key={lesson.id}
-                      className={`absolute left-2 right-2 overflow-hidden rounded-xl p-3 text-sm font-medium text-white`}
+                      className="absolute left-2 right-2 overflow-hidden rounded-xl p-3 text-sm font-medium text-white"
                       style={{
                         ...getLessonPosition(start, end),
-                        backgroundColor: connection?.cardColor ?? "#8E8E93",
+                        backgroundColor: lesson.cardColor,
                       }}
                     >
                       <p className="font-semibold">
-                        {assignment?.subject ??
-                          "Unknown subject"}{" "}
-                        –{" "}
-                        {student?.name ??
-                          "Unknown student"}
+                        {lesson.subject} – {lesson.studentName}
                       </p>
 
                       <p className="mt-1 text-xs opacity-80">
@@ -256,9 +229,7 @@ export default function Calendar() {
                       </p>
 
                       <p className="mt-1 text-xs opacity-80">
-                        {lesson.studentVerified
-                          ? "Confirmed"
-                          : "Pending confirmation"}
+                        {isConfirmed ? "Confirmed" : "Pending confirmation"}
                       </p>
                     </article>
                   );

@@ -1,11 +1,7 @@
 "use client"
 
-import {
-  lessons,
-  teachingAssignments,
-  teacherStudentConnections,
-  students,
-} from "@/app/lib/placeholder-data";
+import type { StudentCardData } from "@/app/lib/student-data";
+import { getStudentCards } from "@/app/lib/student-data";
 
 import Search from "./search";
 import LiquidGlass from "../liquid-glass";
@@ -13,7 +9,6 @@ import AddStudentForm from "./add-student-form";
 import { useState, useRef, useEffect } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
-const teacherID = "user_teacher_1";
 
 function formatTime(time: string) {
   const [hourString, minute] = time.split(":");
@@ -42,25 +37,13 @@ function formatDate(date: string) {
   return `${weekday}, ${dayMonth}`;
 }
 
-type StudentCardData = {
-  connectionId: string;
-  studentId: string;
-  displayName: string;
-  level: string;
-  avatarURL: string | null;
-  cardColor: string;
 
-  subjects: string[];
+export default function StudentTab({
+  studentCards,
+}: {
+  studentCards: StudentCardData[];
+}) {
 
-  nextLesson: {
-    id: string;
-    date: string;
-    startTime: string;
-  } | null;
-};
-
-
-export default function StudentTab() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
 
@@ -82,65 +65,6 @@ export default function StudentTab() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  {/* Get studentCard info */ }
-  const studentCards: StudentCardData[] =
-    teacherStudentConnections.filter(
-      (connection) => connection.teacherId === teacherID && connection.status === "active"
-    ).flatMap((connection) => {
-      const student = students.find(
-        (student) => student.id === connection.studentId
-      );
-      if (!student) {
-        return [];
-      }
-      const studentAssignment = teachingAssignments.filter(
-        (assignment) => assignment.connectionId === connection.id
-      );
-      const subject = studentAssignment.map((subject) => subject.subject);
-      const assignmentIds = studentAssignment.map((assignment) => assignment.id)
-
-      const nextLesson = lessons.filter(
-        (lesson) => assignmentIds.includes(lesson.assignmentId)
-      ).filter((lesson) => {
-        const lessonStart = new Date(
-          `${lesson.date}T${lesson.startTime}:00+08:00`
-        );
-        const now = new Date()
-        return (
-          lessonStart > now && lesson.status !== "cancelled"
-        )
-      }).sort((lessonA, lessonB) => {
-        const timeA = new Date(
-          `${lessonA.date}T${lessonA.startTime}:00+08:00`
-        ).getTime();
-        const timeB = new Date(
-          `${lessonB.date}T${lessonB.startTime}:00+08:00`
-        ).getTime();
-        return timeA - timeB;
-      })[0] ?? null;
-
-      return [
-        {
-          connectionId: connection.id,
-          studentId: student.id,
-          displayName: student.name,
-          level: student.level,
-          avatarURL: null,
-          cardColor: connection.cardColor,
-
-          subjects: subject,
-
-          nextLesson: nextLesson
-            ? {
-              id: nextLesson.id,
-              date: nextLesson.date,
-              startTime: nextLesson.startTime,
-            }
-            : null,
-        }
-      ]
-
-    });
 
   return (
     <div className="flex h-full flex-col gap-3">
