@@ -1,6 +1,6 @@
 "use client";
 
-import type { CalendarLesson } from "@/app/lib/calendar";
+import type { CalendarLesson } from "@/app/lib/calendar-type";
 
 import {
   formatHour,
@@ -12,7 +12,6 @@ import {
 
 import LiquidGlass from "../liquid-glass";
 import { useCalendar } from "./use-calendar";
-import { useState } from "react";
 
 export default function Calendar({
   lessons,
