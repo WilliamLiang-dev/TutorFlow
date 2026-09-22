@@ -1,7 +1,6 @@
 "use client"
 
 import type { StudentCardData } from "@/app/lib/student-data";
-import { getStudentCards } from "@/app/lib/student-data";
 
 import Search from "./search";
 import LiquidGlass from "../liquid-glass";

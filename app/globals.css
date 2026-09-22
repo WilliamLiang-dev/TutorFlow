@@ -256,3 +256,25 @@ body {
     Arial,
     sans-serif;
 }
+
+@keyframes danmaku {
+  from {
+    left: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    left: 100%;
+    transform: translateX(0);
+  }
+}
+
+.danmaku {
+  animation: danmaku 16s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .danmaku {
+    animation: none;
+    left: 10%;
+  }
+}
