@@ -278,3 +278,64 @@ body {
     left: 10%;
   }
 }
+
+.tutorflow-handwriting {
+  font-family: "Snell Roundhand", "Brush Script MT", cursive;
+  font-size: 125px;
+  font-style: italic;
+
+  fill: transparent;
+  stroke: #292524;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+
+  animation:
+    trace-lettering 3.5s ease forwards,
+    fill-lettering 1.0s ease 1.5s forwards;
+}
+
+.tutorflow-tagline {
+  opacity: 0;
+  animation: reveal-tagline 1s ease 3s forwards;
+}
+
+@keyframes trace-lettering {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fill-lettering {
+  to {
+    fill: #292524;
+    stroke: transparent;
+  }
+}
+
+@keyframes reveal-tagline {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorflow-handwriting {
+    animation: none;
+    fill: #292524;
+    stroke: none;
+  }
+
+  .tutorflow-tagline {
+    animation: none;
+    opacity: 1;
+  }
+}
