@@ -3,7 +3,10 @@
 import LiquidGlass from "../liquid-glass";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "../../lib/auth-client";
 
 type LoginFormProps = {
     onRegister: () => void;
@@ -13,11 +16,54 @@ export default function LoginForm({ onRegister }: LoginFormProps) {
 
     const [mode, setMode] = useState<"login" | "register">("login");
 
+    const router = useRouter();
+    const submittingRef = useRef(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    async function handleSignIn(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        if (submittingRef.current) return;
+
+        const formData = new FormData(event.currentTarget);
+        const email = String(formData.get("email") ?? "").trim();
+        const password = String(formData.get("password") ?? "");
+
+        submittingRef.current = true;
+        setIsSubmitting(true);
+        setErrorMessage("");
+
+        try {
+            const { data, error } = await authClient.signIn.email({
+                email,
+                password,
+            });
+
+            if (error || !data) {
+                setErrorMessage(
+                    error?.message || "Unable to sign in. Please try again."
+                );
+                return;
+            }
+
+            router.replace("/dashboard");
+            router.refresh();
+        } catch {
+            setErrorMessage("Unable to connect. Please try again.");
+        } finally {
+            submittingRef.current = false;
+            setIsSubmitting(false);
+        }
+    }
+
     return (
         <div className="min-h-screen grid grid-cols-1 items-center gap-12 px-6 py-12 md:grid-cols-2 md:px-16">
             <div className="flex min-w-0 justify-center">
                 <LiquidGlass className="rounded-2xl" strength={12}>
                     <form
+                        onSubmit={handleSignIn}
                         className="w-[420px] max-w-full p-10">
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-col gap-1">
@@ -29,7 +75,10 @@ export default function LoginForm({ onRegister }: LoginFormProps) {
                                         name="email"
                                         type="email"
                                         placeholder="example@gmail.com"
-                                        className="w-full p-3 bg-white/100 rounded h-10" />
+                                        autoComplete="email"
+                                        required
+                                        disabled={isSubmitting}
+                                        className="w-full p-3 bg-white/100 rounded h-10 border-b-2 border-transparent focus:outline-none focus:border-b-gray-400" />
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <label className="text-base">
@@ -40,17 +89,41 @@ export default function LoginForm({ onRegister }: LoginFormProps) {
                                         name="password"
                                         type="password"
                                         placeholder="Password"
-                                        className="w-full p-3 bg-white/100 rounded h-10" />
-                                </div>
-                                <div className="text-right text-sm">
-                                    <button type="button">
-                                        Forgot Password?
-                                    </button>
+                                        autoComplete="current-password"
+                                        required
+                                        disabled={isSubmitting}
+                                        className="w-full p-3 bg-white/100 rounded h-10 border-b-2 border-transparent focus:outline-none focus:border-b-gray-400" />
+                                    {errorMessage && (
+                                        <p role="alert" className="text-sm text-red-600">
+                                            {errorMessage}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
+                            <div className={`${errorMessage ? "mt-0" : "mt-3"} text-right text-sm`}>
+                                <button type="button">
+                                    Forgot Password?
+                                </button>
+                            </div>
+
                             <div className="flex items-center my-6">
-                                <button className="bg-black/100 rounded w-full text-white py-1 text-base">
-                                    Sign in
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    aria-busy={isSubmitting}
+                                    className="flex items-center justify-center bg-black rounded w-full h-8 text-white text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <span
+                                                aria-hidden="true"
+                                                className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                                            />
+                                            <span className="sr-only">Signing in…</span>
+                                        </>
+                                    ) : (
+                                        "Sign in"
+                                    )}
                                 </button>
                             </div>
                             <div className="my-6 mx-auto flex w-full max-w-xs items-center gap-3">

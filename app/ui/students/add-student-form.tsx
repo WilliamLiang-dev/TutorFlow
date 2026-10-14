@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
 type AddStudentProps ={
     onCancel: () => void
@@ -325,76 +326,103 @@ export default function AddStudentForm({
                           : "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
                       }`}
                     >
-                    <div className="flex flex-col text-sm">
-                      <label className="pb-1">
-                        Syllabus:
-                      </label>
-                      <select
-                        id="syllabus"
-                        name="syllabus"
-                        value={row.syllabus}
-                        onChange={(event) => 
-                          updateRow(index, "syllabus", event.target.value)}
-                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
-                      >
-                        <option value=""></option>
-                        {Object.keys(syllabusOptions).map((syllabusOptions) =>
-                          <option
-                            key={syllabusOptions}
-                            value={syllabusOptions}>
-                            {syllabusOptions}
-                          </option>)}
-                      </select>
+                    <div className="flex min-w-0 flex-col text-sm">
+                        <label htmlFor={`syllabus-${index}`} className="pb-1">
+                            Syllabus:
+                        </label>
+
+                        <div className="relative">
+                            <select
+                                id={`syllabus-${index}`}
+                                name="syllabus"
+                                value={row.syllabus}
+                                onChange={(event) =>
+                                    updateRow(index, "syllabus", event.target.value)
+                                }
+                                className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
+                            >
+                                <option value=""></option>
+
+                                {Object.keys(syllabusOptions).map((syllabus) => (
+                                    <option key={syllabus} value={syllabus}>
+                                        {syllabus}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <ChevronDownIcon
+                                aria-hidden="true"
+                                className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
+                            />
+                        </div>
                     </div>
-                    <div className="flex flex-1 flex-col text-sm">
-                      <label className="pb-1">
-                        Subject:
-                      </label>
-                      <select
-                        id="subject"
-                        name="subject"
-                        value={row.subject}
-                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
-                        onChange={(event) => {
-                          updateRow(index, "subject", event.target.value)
-                        }
-                        }>
-                        <option value=""></option>
-                        {row.syllabus && (
-                          syllabusOptions[
-                            row.syllabus as keyof typeof syllabusOptions
-                          ].subjects.map((subject) => (
-                            <option key={subject} value={subject}>
-                              {subject}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-                    <div className="flex flex-1 flex-col text-sm">
-                      <label className="pb-1">
-                        Level:
-                      </label>
-                      <select
-                        id="level"
-                        name="level"
-                        value={row.level}
-                        className="focus:outline-none rounded border border-zinc-500 px-1 py-2 min-w-0"
-                        onChange={(event) => 
-                          updateRow(index, "level", event.target.value)
-                        }>
-                        <option value=""></option>
-                        {row.syllabus && (
-                          syllabusOptions[
-                            row.syllabus as keyof typeof syllabusOptions
-                          ].levels.map((level) => (
-                            <option key={level} value={level}>
-                              {level}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
+                    <div className="flex min-w-0 flex-col text-sm">
+                          <label htmlFor={`subject-${index}`} className="pb-1">
+                              Subject:
+                          </label>
+
+                          <div className="relative">
+                              <select
+                                  id={`subject-${index}`}
+                                  name="subject"
+                                  value={row.subject}
+                                  onChange={(event) =>
+                                      updateRow(index, "subject", event.target.value)
+                                  }
+                                  className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
+                              >
+                                  <option value=""></option>
+
+                                  {row.syllabus &&
+                                      syllabusOptions[
+                                          row.syllabus as keyof typeof syllabusOptions
+                                      ].subjects.map((subject) => (
+                                          <option key={subject} value={subject}>
+                                              {subject}
+                                          </option>
+                                      ))}
+                              </select>
+
+                              <ChevronDownIcon
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
+                              />
+                          </div>
+                      </div>
+
+                      <div className="flex min-w-0 flex-col text-sm">
+                          <label htmlFor={`level-${index}`} className="pb-1">
+                              Level:
+                          </label>
+
+                          <div className="relative">
+                              <select
+                                  id={`level-${index}`}
+                                  name="level"
+                                  value={row.level}
+                                  onChange={(event) =>
+                                      updateRow(index, "level", event.target.value)
+                                  }
+                                  className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
+                              >
+                                  <option value=""></option>
+
+                                  {row.syllabus &&
+                                      syllabusOptions[
+                                          row.syllabus as keyof typeof syllabusOptions
+                                      ].levels.map((level) => (
+                                          <option key={level} value={level}>
+                                              {level}
+                                          </option>
+                                      ))}
+                              </select>
+
+                              <ChevronDownIcon
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
+                              />
+                          </div>
+                      </div>
                     {rows.length > 1 && (
                       <div className="flex h-10 items-center justify-center self-end">
                         {index >= 1 && (
