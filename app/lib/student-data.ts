@@ -1,5 +1,9 @@
-"use server"
+import "server-only";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/app/lib/auth";
 import { sql } from "./db";
+
 
 export type StudentCardData = {
   connectionId: string;
@@ -14,24 +18,42 @@ export type StudentCardData = {
     date: string;
     startTime: string;
   } | null;
+  invitationState:
+  | "pending"
+  | "accepted"
+  | "expired"
+  | "cancelled"
+  | "not_invited";
 };
 
 export async function getStudentCards(): Promise<StudentCardData[]> {
-  // Temporary access until authentication is implemented.
-  if (
-    process.env.NODE_ENV !== "development" ||
-    process.env.VERCEL
-  ) {
-    throw new Error("Teacher authentication is required.");
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || !session.user.emailVerified) {
+    redirect("/login");
   }
 
-  const teacherId = process.env.DEV_TEACHER_ID;
+  const teachers = await sql`
+    SELECT teacher.id
+    FROM teachers AS teacher
+    JOIN users AS app_user
+      ON app_user.id = teacher.user_id
+    WHERE app_user.auth_user_id = ${session.user.id}
+      AND app_user.role = 'teacher'
+    LIMIT 1
+  `;
+
+  const teacherId = teachers[0]?.id;
 
   if (!teacherId) {
-    throw new Error("DEV_TEACHER_ID is missing.");
+    throw new Error("Your tutor profile has not been set up yet.");
   }
 
-  const result = await sql`
+  // Keep your existing student query and return below.
+
+const result = await sql`
     SELECT
       connection.id AS "connectionId",
       student.id AS "studentId",
@@ -39,6 +61,15 @@ export async function getStudentCards(): Promise<StudentCardData[]> {
       COALESCE(student.level, '') AS level,
       NULL AS "avatarURL",
       connection.card_color AS "cardColor",
+
+      CASE
+        WHEN invitation.id IS NULL THEN 'not_invited'
+        WHEN invitation.status = 'accepted' THEN 'accepted'
+        WHEN invitation.status = 'cancelled' THEN 'cancelled'
+        WHEN invitation.status = 'expired'
+          OR invitation.expires_at <= now() THEN 'expired'
+        ELSE 'pending'
+      END AS "invitationState",
 
       ARRAY(
         SELECT DISTINCT assignment.subject
@@ -54,6 +85,17 @@ export async function getStudentCards(): Promise<StudentCardData[]> {
 
     JOIN students AS student
       ON student.id = connection.student_id
+
+    LEFT JOIN LATERAL (
+      SELECT
+        invite.id,
+        invite.status,
+        invite.expires_at
+      FROM invitations AS invite
+      WHERE invite.connection_id = connection.id
+      ORDER BY invite.created_at DESC, invite.id DESC
+      LIMIT 1
+    ) AS invitation ON true
 
     WHERE connection.teacher_id = ${teacherId}
       AND connection.status = 'active'
