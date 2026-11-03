@@ -112,13 +112,14 @@ export default function RegisterForm({ onSignIn }: RegisterFormProps) {
                     name
                 );
 
+                console.log("Account setup result:", result);
+
                 if (result.error) {
                     setErrorMessage(result.error);
                     return;
                 }
 
-                router.replace("/dashboard");
-                router.refresh();
+                window.location.replace("/dashboard");
             }
         } catch {
             setErrorMessage("Something went wrong. Please try again.");

@@ -1,492 +1,533 @@
-"use client"
+"use client";
 
-import { useState } from "react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useRef, useState, type FormEvent } from "react";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-type AddStudentProps ={
-    onCancel: () => void
+type TeachingAssignment = {
+  syllabus: string;
+  subject: string;
+};
+
+export type AddStudentData = {
+  name: string;
+  email: string;
+  level: string;
+  assignments: TeachingAssignment[];
+};
+
+type AddStudentProps = {
+  onCancel: () => void;
+  onSave?: (data: AddStudentData) => Promise<void> | void;
+};
+
+type AssignmentRow = TeachingAssignment & {
+  id: number;
+};
+
+type FormErrors = {
+  name?: string;
+  email?: string;
+  level?: string;
+  assignments?: Record<number, string>;
+  submit?: string;
+};
+
+const fields = [
+  {
+    key: "syllabus",
+    label: "Syllabus",
+    placeholder: "e.g. HKDSE, IB, Other",
+  },
+  {
+    key: "subject",
+    label: "Subject",
+    placeholder: "e.g. Mathematics",
+  },
+] as const;
+
+function validateAssignment(row: TeachingAssignment) {
+  const missing: string[] = [];
+
+  if (!row.syllabus.trim()) missing.push("syllabus");
+  if (!row.subject.trim()) missing.push("subject");
+
+  return missing.length > 0
+    ? `Please enter ${missing.join(" and ")}.`
+    : "";
+}
+
+function inputClass(hasError: boolean) {
+  return [
+    "h-11 w-full min-w-0 rounded-xl border bg-white px-3",
+    "text-sm text-zinc-900 outline-none transition-colors",
+    "placeholder:text-zinc-400 disabled:bg-zinc-50",
+    hasError
+      ? "border-red-400 focus:border-red-500"
+      : "border-zinc-200 focus:border-zinc-500",
+  ].join(" ");
 }
 
 export default function AddStudentForm({
-    onCancel,
-} : AddStudentProps) {
-    const [errors, setErrors] = useState<{
-        name?: string;
-        email?: string;
-        academicDetails?: string[];
-    }>({});
+  onCancel,
+  onSave,
+}: AddStudentProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [level, setLevel] = useState("");
 
-    const [rows, setRows] = useState([
-      {syllabus: "", subject: "", level: ""}
+  const [rows, setRows] = useState<AssignmentRow[]>([
+    { id: 0, syllabus: "", subject: "" },
+  ]);
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const nextRowId = useRef(1);
+  const submittingRef = useRef(false);
+
+  function addRow() {
+    if (rows.length >= 50) return;
+
+    const id = nextRowId.current++;
+
+    setRows((previous) => [
+      ...previous,
+      { id, syllabus: "", subject: "" },
     ]);
 
-    const syllabusOptions = {
-    HKDSE: {
-      subjects: [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Geography",
-        "History",
-        "ICT",
-      ],
-      levels: [
-        "P1",
-        "P2",
-        "P3",
-        "P4",
-        "P5",
-        "P6",
-        "F1",
-        "F2",
-        "F3",
-        "F4",
-        "F5",
-        "F6",
-      ],
-      levelLabel: "Level",
-    },
+    setErrors((previous) => ({
+      ...previous,
+      submit: undefined,
+    }));
+  }
 
-    IGCSE: {
-      subjects: [
-        "Mathematics",
-        "Additional Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Business",
-        "Computer Science",
-        "Geography",
-        "History",
-      ],
-      levels: [
-        "Year 9",
-        "Year 10",
-        "Year 11",
-      ],
-      levelLabel: "Year",
-    },
+  function removeRow(id: number) {
+    if (rows.length <= 1) return;
 
-    IB: {
-      subjects: [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "English",
-        "Chinese",
-        "Economics",
-        "Business Management",
-        "Computer Science",
-        "Geography",
-        "History",
-      ],
-      levels: [
-        "PYP",
-        "MYP 1",
-        "MYP 2",
-        "MYP 3",
-        "MYP 4",
-        "MYP 5",
-        "DP 1",
-        "DP 2",
-      ],
-      levelLabel: "Level",
-    },
-  };
-    function joinWithAnd(items: string[]) {
-      if (items.length === 1) {
-        return items[0];
-      }
-      return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
-    }
-    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const name = String(formData.get("name") ?? "").trim();
-        const email = String(formData.get("email") ?? "").trim();
+    setRows((previous) =>
+      previous.filter((row) => row.id !== id),
+    );
 
-        const newErrors: {
-            name?: string;
-            email?: string;
-            academicDetails?: string[];
-        } = {};
+    setErrors((previous) => {
+      const assignments = { ...previous.assignments };
+      delete assignments[id];
 
-        if (!name) {
-            newErrors.name = "Please enter the student's name"
-        }
-        if (!email) {
-            newErrors.email = "Please enter the student's email"
-        }
+      return {
+        ...previous,
+        assignments,
+        submit: undefined,
+      };
+    });
+  }
 
-        const rowErrors = rows.map((row) => {
-          const missingFields: string[] = [];
+  function updateRow(
+    id: number,
+    field: keyof TeachingAssignment,
+    value: string,
+  ) {
+    const currentRow = rows.find((row) => row.id === id);
+    if (!currentRow) return;
 
-          if (!row.syllabus) {
-            missingFields.push("syllabus")
+    const updatedRow = { ...currentRow, [field]: value };
+
+    setRows((previous) =>
+      previous.map((row) =>
+        row.id === id ? updatedRow : row,
+      ),
+    );
+
+    setErrors((previous) => ({
+      ...previous,
+      submit: undefined,
+      assignments: previous.assignments?.[id]
+        ? {
+            ...previous.assignments,
+            [id]: validateAssignment(updatedRow),
           }
-          if (!row.subject) {
-              missingFields.push("subject")
-          }
-          if (!row.level) {
-              missingFields.push("level")
-          }
+        : previous.assignments,
+    }));
+  }
 
-          return (missingFields.length > 0)
-            ? `Please select ${joinWithAnd(missingFields)}`
-            : "";
-        })
-        if (rowErrors.some((message) => message !== "")) {
-          newErrors.academicDetails = rowErrors;
-        }
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-        setErrors(newErrors);
-        if (Object.keys(newErrors).length > 0) {
-            return;
-        }
+    if (submittingRef.current) return;
+
+    const form = event.currentTarget;
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedLevel = level.trim();
+
+    const newErrors: FormErrors = {};
+    const assignmentErrors: Record<number, string> = {};
+
+    if (!trimmedName) {
+      newErrors.name = "Please enter the student's name.";
     }
 
-    function updateRow(
-      index: number,
-      field: "syllabus" | "subject" | "level",
-      value: string
+    const emailInput = form.elements.namedItem(
+      "email",
+    ) as HTMLInputElement | null;
+
+    if (!trimmedEmail) {
+      newErrors.email = "Please enter the student's email.";
+    } else if (
+      emailInput?.validity.typeMismatch ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)
     ) {
-      const updatedRow =
-        field === "syllabus"
-        ? {...rows[index], syllabus: value, subject: "", level: ""}
-        : {...rows[index], [field]: value};
-
-      setRows(previousRows =>
-        previousRows.map((row, rowIndex) =>
-        rowIndex === index ? updatedRow : row
-        )
-      );
-
-      setErrors(previousErrors => {
-        if (!previousErrors.academicDetails?.[index]) {
-          return previousErrors;
-        }
-        
-        const missingFields: string[] = [];
-
-        if (!updatedRow.syllabus) missingFields.push("syllabus");
-        if (!updatedRow.subject) missingFields.push("subject");
-        if (!updatedRow.level) missingFields.push("level");
-
-        const updatedErrors = [...previousErrors.academicDetails];
-
-        updatedErrors[index] = missingFields.length > 0
-        ? `Please select ${joinWithAnd(missingFields)}`
-        : "";
-
-        return {
-          ...previousErrors,
-          academicDetails: updatedErrors,
-        };
-      })
+      newErrors.email = "Please enter a valid email address.";
     }
 
-    return (
-        <form
-            onSubmit={handleSubmit}
-            noValidate
-            className={`w-full space-y-4 rounded-md bg-white p-6 
-              transition-[max-width] ease-in-out duration-300 ${
-              rows.length > 1 ? "max-w-[31rem]" : "max-w-md"
-            }`}>
-            <div>
-              <div className="relative">
-                <input
-                  id="name"
-                  name="name"
-                  type="name"
-                  placeholder=" "
-                  aria-invalid={Boolean(errors.name)}
-                  aria-describedby={errors.name ? "name-error" : undefined}
-                  onChange={(event) => {
-                    if (event.target.value.trim()) {
-                      setErrors((previousErrors) => ({
-                        ...previousErrors,
-                        name: undefined,
-                      }));
-                    }
-                  }}
-                  className="peer h-14 w-full rounded
-                  border border-zinc-500
-                  bg-transparent
-                  px-3 text-black
-                  outline-none"
-                />
-                <label
-                  className="
-                    absolute left-3 top-0
-                    -translate-y-1/2 scale-75
-                    bg-white/100 px-2
-                    bg-transparent text-sm text-zinc-500
-                    transition-all duration-200
+    if (!trimmedLevel) {
+      newErrors.level = "Please enter the student's school level / year.";
+    }
 
-                    peer-placeholder-shown:top-1/2
-                    peer-placeholder-shown:scale-100
+    rows.forEach((row) => {
+      const message = validateAssignment(row);
 
-                    peer-focus:top-0
-                    peer-focus:scale-75
-                    "
-                >
-                  Name
-                </label>
-              </div>
-              <div
-                className={`
-                grid transition-[grid-template-rows]
-                duration-200 ease-out
-                ${errors.name ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
-              `}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <p className="text-xs text-red-500">
-                    {errors.name}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="relative">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder=" "
-                  aria-invalid={Boolean(errors.email)}
-                  aria-errormessage={errors.email ? "email error" : undefined}
-                  onChange={(event) => {
-                    if (event.target.value.trim()) {
-                      setErrors((previousErrors) => ({
-                        ...previousErrors,
-                        email: undefined,
-                      }));
-                    }
-                  }}
-                  className="
-                  peer h-14 w-full rounded
-                  border border-zinc-500
-                  bg-transparent
-                  px-3
-                  text-black
-                  outline-none
-                "
-                />
+      if (message) {
+        assignmentErrors[row.id] = message;
+      }
+    });
 
-                <label
-                  className="
-                  absolute left-3 top-0
-                  -translate-y-1/2 scale-75
-                  bg-white/100 px-2
-                  bg-transparent text-sm text-zinc-500
-                  transition-all duration-200
+    if (Object.keys(assignmentErrors).length > 0) {
+      newErrors.assignments = assignmentErrors;
+    }
 
-                  peer-placeholder-shown:top-1/2
-                  peer-placeholder-shown:scale-100
+    setErrors(newErrors);
 
-                  peer-focus:top-0
-                  peer-focus:scale-75
-                "
-                >
-                  Email
-                </label>
-              </div>
-            <div
-              className={`
-              grid transition-[grid-template-rows]
-              duration-200 ease-out
-              ${errors.email ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
-            `}
+    if (Object.keys(newErrors).length > 0) {
+      const firstInvalidName = newErrors.name
+        ? "name"
+        : newErrors.email
+          ? "email"
+          : newErrors.level
+            ? "level"
+            : (() => {
+                const row = rows.find(
+                  (item) => assignmentErrors[item.id],
+                );
+
+                const field = row
+                  ? fields.find((item) => !row[item.key].trim())
+                  : undefined;
+
+                return row && field
+                  ? `assignment-${row.id}-${field.key}`
+                  : "";
+              })();
+
+      const input = form.elements.namedItem(firstInvalidName);
+
+      if (input instanceof HTMLInputElement) {
+        input.focus();
+      }
+
+      return;
+    }
+
+    const data: AddStudentData = {
+      name: trimmedName,
+      email: trimmedEmail,
+      level: trimmedLevel,
+      assignments: rows.map((row) => ({
+        syllabus: row.syllabus.trim(),
+        subject: row.subject.trim(),
+      })),
+    };
+
+    if (!onSave) {
+      setErrors({
+        submit: "Saving is not connected yet. Your entries have been kept.",
+      });
+      return;
+    }
+
+    submittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      await onSave(data);
+      onCancel();
+    } catch (error) {
+      setErrors({
+        submit:
+          error instanceof Error
+            ? error.message
+            : "Could not add the student. Please try again.",
+      });
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-busy={isSubmitting}
+      className="w-full space-y-6 bg-white p-6"
+    >
+      <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
+        {/* Details shared by all subjects */}
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="student-name"
+              className="mb-2 block text-sm font-medium text-zinc-700"
             >
-              <div className="min-h-0 overflow-hidden">
-                <p className="text-xs text-red-500">
-                  {errors.email}
-                </p>
-              </div>
-            </div>
-            </div>
-            <div className="space-y-1">
-              <div className="space-y-4">
-                {rows.map((row, index) => (
-                  <div key={index}>
-                    <div
-                      className={`grid gap-4 ${
-                        rows.length > 1
-                          ? "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_1rem]"
-                          : "grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
-                      }`}
-                    >
-                    <div className="flex min-w-0 flex-col text-sm">
-                        <label htmlFor={`syllabus-${index}`} className="pb-1">
-                            Syllabus:
-                        </label>
+              Student name
+            </label>
 
-                        <div className="relative">
-                            <select
-                                id={`syllabus-${index}`}
-                                name="syllabus"
-                                value={row.syllabus}
-                                onChange={(event) =>
-                                    updateRow(index, "syllabus", event.target.value)
-                                }
-                                className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
-                            >
-                                <option value=""></option>
+            <input
+              id="student-name"
+              name="name"
+              type="text"
+              autoComplete="off"
+              required
+              maxLength={100}
+              value={name}
+              placeholder="Chris Wong"
+              onChange={(event) => {
+                setName(event.target.value);
+                setErrors((previous) => ({
+                  ...previous,
+                  name: undefined,
+                  submit: undefined,
+                }));
+              }}
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={
+                errors.name ? "student-name-error" : undefined
+              }
+              className={inputClass(Boolean(errors.name))}
+            />
 
-                                {Object.keys(syllabusOptions).map((syllabus) => (
-                                    <option key={syllabus} value={syllabus}>
-                                        {syllabus}
-                                    </option>
-                                ))}
-                            </select>
+            {errors.name && (
+              <p
+                id="student-name-error"
+                className="mt-1.5 text-xs text-red-500"
+              >
+                {errors.name}
+              </p>
+            )}
+          </div>
 
-                            <ChevronDownIcon
-                                aria-hidden="true"
-                                className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex min-w-0 flex-col text-sm">
-                          <label htmlFor={`subject-${index}`} className="pb-1">
-                              Subject:
-                          </label>
+          <div>
+            <label
+              htmlFor="student-email"
+              className="mb-2 block text-sm font-medium text-zinc-700"
+            >
+              Email
+            </label>
 
-                          <div className="relative">
-                              <select
-                                  id={`subject-${index}`}
-                                  name="subject"
-                                  value={row.subject}
-                                  onChange={(event) =>
-                                      updateRow(index, "subject", event.target.value)
-                                  }
-                                  className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
-                              >
-                                  <option value=""></option>
+            <input
+              id="student-email"
+              name="email"
+              type="email"
+              autoComplete="off"
+              required
+              maxLength={254}
+              value={email}
+              placeholder="student@example.com"
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setErrors((previous) => ({
+                  ...previous,
+                  email: undefined,
+                  submit: undefined,
+                }));
+              }}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={
+                errors.email ? "student-email-error" : undefined
+              }
+              className={inputClass(Boolean(errors.email))}
+            />
 
-                                  {row.syllabus &&
-                                      syllabusOptions[
-                                          row.syllabus as keyof typeof syllabusOptions
-                                      ].subjects.map((subject) => (
-                                          <option key={subject} value={subject}>
-                                              {subject}
-                                          </option>
-                                      ))}
-                              </select>
+            {errors.email && (
+              <p
+                id="student-email-error"
+                className="mt-1.5 text-xs text-red-500"
+              >
+                {errors.email}
+              </p>
+            )}
+          </div>
 
-                              <ChevronDownIcon
-                                  aria-hidden="true"
-                                  className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
-                              />
-                          </div>
-                      </div>
+          <div>
+            <label
+              htmlFor="student-level"
+              className="mb-2 block text-sm font-medium text-zinc-700"
+            >
+              School level / year
+            </label>
 
-                      <div className="flex min-w-0 flex-col text-sm">
-                          <label htmlFor={`level-${index}`} className="pb-1">
-                              Level:
-                          </label>
+            <input
+              id="student-level"
+              name="level"
+              type="text"
+              required
+              maxLength={100}
+              value={level}
+              placeholder="P2, F5, Year 10, DP 1"
+              onChange={(event) => {
+                setLevel(event.target.value);
+                setErrors((previous) => ({
+                  ...previous,
+                  level: undefined,
+                  submit: undefined,
+                }));
+              }}
+              aria-invalid={Boolean(errors.level)}
+              aria-describedby={
+                errors.level ? "student-level-error" : undefined
+              }
+              className={inputClass(Boolean(errors.level))}
+            />
 
-                          <div className="relative">
-                              <select
-                                  id={`level-${index}`}
-                                  name="level"
-                                  value={row.level}
-                                  onChange={(event) =>
-                                      updateRow(index, "level", event.target.value)
-                                  }
-                                  className="w-full min-w-0 appearance-none rounded border border-zinc-500 pl-2 pr-7 py-2 focus:outline-none"
-                              >
-                                  <option value=""></option>
+            {errors.level && (
+              <p
+                id="student-level-error"
+                className="mt-1.5 text-xs text-red-500"
+              >
+                {errors.level}
+              </p>
+            )}
+          </div>
+        </div>
 
-                                  {row.syllabus &&
-                                      syllabusOptions[
-                                          row.syllabus as keyof typeof syllabusOptions
-                                      ].levels.map((level) => (
-                                          <option key={level} value={level}>
-                                              {level}
-                                          </option>
-                                      ))}
-                              </select>
+        {/* Multiple subjects for one student */}
+        <div className="border-t border-zinc-100 pt-5">
+          <h3 className="text-sm font-medium text-zinc-900">
+            Subjects you teach
+          </h3>
 
-                              <ChevronDownIcon
-                                  aria-hidden="true"
-                                  className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2"
-                              />
-                          </div>
-                      </div>
+          <div className="mt-4 space-y-4">
+            {rows.map((row, index) => {
+              const rowError = errors.assignments?.[row.id];
+              const errorId = `assignment-error-${row.id}`;
+
+              return (
+                <fieldset
+                  key={row.id}
+                  className="min-w-0 rounded-2xl border border-zinc-200 p-4"
+                >
+                  <legend className="sr-only">
+                    Subject {index + 1}
+                  </legend>
+
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-xs font-medium text-zinc-500">
+                      Subject {index + 1}
+                    </span>
+
                     {rows.length > 1 && (
-                      <div className="flex h-10 items-center justify-center self-end">
-                        {index >= 1 && (
-                          <button
-                          type="button"
-                          className="flex items-center justify-center rounded-full h-4 w-4 bg-[#ed2027] cursor-pointer"
-                          onClick={() => {
-                            setRows(previousRows =>
-                              previousRows.filter((_, rowIndex) => rowIndex !== index)
-                            )
-                          }}>
-                          <span className="text-white -translate-y-[1px]">
-                            -
-                          </span>
-                        </button>
-                        )}
-                        </div>
-                    )}
-                    </div>
-                    <div
-                      className={`
-                        grid transition-[grid-template-rows] duration-200
-                        ${errors.academicDetails?.[index] ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
-                      `}
+                      <button
+                        type="button"
+                        aria-label={`Remove subject ${index + 1}`}
+                        onClick={() => removeRow(row.id)}
+                        className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500"
                       >
-                        <div className="min-h-0 overflow-hidden">
-                          <p
-                            id="academicDetails"
-                            className="text-xs text-red-500">
-                            {errors.academicDetails?.[index]}
-                          </p>
-                        </div>
-                    </div>
+                        <TrashIcon
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                        />
+                      </button>
+                    )}
                   </div>
-                ))}
-              </div>
-              <div className="pt-3">
-                <button 
-                className="flex items-center justify-center cursor-pointer inline-flex rounded-full bg-[#0d9647] h-6 w-6"
-                type="button"
-                onClick={() => {
-                  setRows(previousRows => [
-                    ... previousRows,
-                    {syllabus:"", subject:"", level:""},
-                  ])
-                }}>
-                <span className="text-white -translate-y-[1px]">+</span>
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-end gap-5">
-              <button
-                type="submit"
-                className="bg-black rounded-xl text-white px-3 py-1 text-lg border border-black hover:bg-transparent transitions-color hover:text-black ease-in-out">
-                Send
-              </button>
-              <button
-                type="button"
-                className="cursor-pointer"
-                onClick={onCancel}>
-                Cancel
-              </button>
-            </div>
-          </form>
-    )
 
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {fields.map(({ key, label, placeholder }) => {
+                      const inputId = `assignment-${row.id}-${key}`;
+                      const invalid = Boolean(
+                        rowError && !row[key].trim(),
+                      );
+
+                      return (
+                        <div key={key} className="min-w-0">
+                          <label
+                            htmlFor={inputId}
+                            className="mb-1.5 block text-xs text-zinc-600"
+                          >
+                            {label}
+                          </label>
+
+                          <input
+                            id={inputId}
+                            name={inputId}
+                            type="text"
+                            required
+                            maxLength={100}
+                            value={row[key]}
+                            placeholder={placeholder}
+                            onChange={(event) =>
+                              updateRow(row.id, key, event.target.value)
+                            }
+                            aria-invalid={invalid}
+                            aria-describedby={
+                              invalid ? errorId : undefined
+                            }
+                            className={inputClass(invalid)}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {rowError && (
+                    <p
+                      id={errorId}
+                      className="mt-2 text-xs text-red-500"
+                    >
+                      {rowError}
+                    </p>
+                  )}
+                </fieldset>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={addRow}
+            disabled={rows.length >= 50}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <PlusIcon aria-hidden="true" className="h-4 w-4" />
+            Add another subject
+          </button>
+        </div>
+      </fieldset>
+
+      {errors.submit && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          {errors.submit}
+        </p>
+      )}
+
+      <div className="flex items-center justify-end gap-3 border-t border-zinc-100 pt-5">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="rounded-xl px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-50"
+        >
+          {isSubmitting ? "Adding..." : "Add student"}
+        </button>
+      </div>
+    </form>
+  );
 }
